@@ -11,11 +11,18 @@
 
 ## About this fork
 
-This is a fork of [TinyWall](https://github.com/pylorak/tinywall) by Károly Pados. Upstream development is largely inactive, so this fork picks up where it left off with the following goals:
+This is a fork of [TinyWall](https://github.com/pylorak/tinywall) by Károly Pados, designed to be **your personal, hackable Windows firewall**.
 
-- **Modernize the build system**: Ported from .NET Framework 4.8 to .NET 9, removing the dependency on Visual Studio, COM tooling, and the WiX installer. The project now builds with just `dotnet build` and the .NET 9 SDK.
-- **Add new features**: Introduced a regex auto-unblock system that lets you define patterns to automatically unblock matching executables with per-pattern enable/disable control.
-- **Clean up the codebase**: Replaced COM interop with dynamic COM, replaced `ManagedInstallerClass` with direct P/Invoke service management, fixed all nullable reference type warnings, and removed obsolete attributes.
+The idea is simple: clone the repo, open it with an AI coding assistant (Claude Code, GitHub Copilot, etc.), ask for whatever modifications you want, build, and install. That's it. The entire build and install flow requires only the .NET 9 SDK — no Visual Studio, no COM tooling, no WiX installer. Install and uninstall scripts are included in the release folder after building.
+
+TinyWall is a solid, lightweight, non-intrusive firewall with a clean codebase — a great starting point to build whatever features fit your workflow. For example, the feature added in this fork is a regex-based auto-unblocker that matches executable paths. Yours can be anything.
+
+### What changed from upstream
+
+- **Modernized the build system**: Ported from .NET Framework 4.8 to .NET 9. Removed the dependency on Visual Studio, COM tooling, and WiX. Build with just `dotnet build`.
+- **Simplified installation**: Install/uninstall scripts ship in the output folder — no separate installer project needed.
+- **Cleaned up the codebase**: Replaced COM interop with dynamic COM, replaced `ManagedInstallerClass` with direct P/Invoke service management, fixed all nullable reference type warnings, and removed obsolete attributes.
+- **Added regex auto-unblock**: Define patterns to automatically unblock matching executables, with per-pattern enable/disable control.
 
 See [Changelog.txt](Changelog.txt) for full details.
 
