@@ -1,6 +1,11 @@
 TinyWall Changelog
 ---------------------
 
+5.1.0 - (27.03.2026.)
+- Reduce regex auto-unblock latency from up to 60 seconds to ~2 seconds
+
+---------------------
+
 5.0.0 - Major release (27.03.2026.)
 - Port from .NET Framework 4.8 to .NET 9
 - Remove dependency on Visual Studio, COM tooling, and WiX installer

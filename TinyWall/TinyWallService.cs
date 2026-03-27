@@ -65,6 +65,7 @@ namespace pylorak.TinyWall
         private readonly Engine WfpEngine = new("TinyWall Session", "", FWPM_SESSION_FLAGS.None, 5000);
         private readonly ManagementEventWatcher ProcessStartWatcher = new(new WqlEventQuery("SELECT * FROM Win32_ProcessStartTrace"));
         private readonly EventMerger RuleReloadEventMerger = new(1000);
+        private readonly EventMerger RegexAutoUnblockEventMerger = new(2000);
 
         private HashSet<IpAddrMask> LocalSubnetAddreses = new();
         private HashSet<IpAddrMask> GatewayAddresses = new();
@@ -1359,6 +1360,7 @@ namespace pylorak.TinyWall
                     RegexAutoUnblockNewExceptions.Add(
                         new FirewallExceptionV3(newSubject, new UnrestrictedPolicy()));
                 }
+                RegexAutoUnblockEventMerger.Pulse();
                 break;
             }
         }
@@ -1819,6 +1821,10 @@ namespace pylorak.TinyWall
             {
                 Q.Add(new TwRequest(TwMessageSimple.CreateRequest(MessageType.RELOAD_WFP_FILTERS)));
             };
+            RegexAutoUnblockEventMerger.Event += (object? sender, EventArgs args) =>
+            {
+                Q.Add(new TwRequest(TwMessageSimple.CreateRequest(MessageType.MINUTE_TIMER)));
+            };
             MountPointsWatcher.RegistryChanged += (object? sender, EventArgs args) =>
             {
                 RuleReloadEventMerger.Pulse();
@@ -2073,6 +2079,7 @@ namespace pylorak.TinyWall
                 ActiveConfig.Service.Save(ConfigSavePath);
 
             RuleReloadEventMerger.Dispose();
+            RegexAutoUnblockEventMerger.Dispose();
             LocalSubnetFilterConditions.Dispose();
             GatewayFilterConditions.Dispose();
             DnsFilterConditions.Dispose();

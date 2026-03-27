@@ -47,13 +47,18 @@ $svc = Get-Service -Name 'TinyWall' -ErrorAction SilentlyContinue
 if ($svc -or $isUpgrade) {
     Write-Host "  Stopping existing TinyWall service and controller..."
 
-    # Stop the service gracefully
+    # Stop the service gracefully via TinyWall's named pipe
+    # (The service does not accept SCM stop commands in Release builds)
     if ($svc -and $svc.Status -ne 'Stopped') {
-        Stop-Service -Name 'TinyWall' -Force -ErrorAction SilentlyContinue
-        try {
-            $svc.WaitForStatus('Stopped', [TimeSpan]::FromSeconds(10))
-        } catch {
-            Write-Host "  Service did not stop gracefully, forcing..."
+        $stopExe = if (Test-Path $existingExe) { $existingExe } elseif (Test-Path $oldx86Exe) { $oldx86Exe } else { $null }
+        if ($stopExe) {
+            Write-Host "  Sending stop command via TinyWall pipe..."
+            Start-Process -FilePath $stopExe -ArgumentList '/stop' -Wait -NoNewWindow -ErrorAction SilentlyContinue
+            try {
+                $svc.WaitForStatus('Stopped', [TimeSpan]::FromSeconds(15))
+            } catch {
+                Write-Host "  Service did not stop gracefully, forcing..."
+            }
         }
     }
 

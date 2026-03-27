@@ -66,6 +66,20 @@ namespace pylorak.TinyWall
             return TinyWallDoctor.Uninstall();
         }
 
+        private static int StopRunningService()
+        {
+            try
+            {
+                var controller = new Controller("TinyWallController");
+                controller.RequestServerStop();
+                return 0;
+            }
+            catch
+            {
+                return -1;
+            }
+        }
+
         /// <summary>
         /// Der Haupteinstiegspunkt für die Anwendung.
         /// </summary>
@@ -99,6 +113,8 @@ namespace pylorak.TinyWall
                 opts.ProgramMode = StartUpMode.Install;
             if (Utils.StringArrayContains(args, "/uninstall"))
                 opts.ProgramMode = StartUpMode.Uninstall;
+            if (Utils.StringArrayContains(args, "/stop"))
+                opts.ProgramMode = StartUpMode.StopService;
 
             if (opts.ProgramMode == StartUpMode.Invalid)
                 opts.ProgramMode = StartUpMode.Controller;
@@ -131,6 +147,9 @@ namespace pylorak.TinyWall
                 case StartUpMode.Uninstall:
                     AppDomain.CurrentDomain.UnhandledException += UnhandledException_Installer;
                     break;
+                case StartUpMode.StopService:
+                    AppDomain.CurrentDomain.UnhandledException += UnhandledException_Installer;
+                    break;
                 case StartUpMode.Controller:
                     AppDomain.CurrentDomain.UnhandledException += UnhandledException_Gui;
                     break;
@@ -154,6 +173,8 @@ namespace pylorak.TinyWall
                     return InstallService();
                 case StartUpMode.Uninstall:
                     return UninstallService();
+                case StartUpMode.StopService:
+                    return StopRunningService();
                 case StartUpMode.Controller:
                     return StartController(opts);
                 case StartUpMode.DevelTool:

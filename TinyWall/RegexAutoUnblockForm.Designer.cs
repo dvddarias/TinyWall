@@ -21,6 +21,7 @@ namespace pylorak.TinyWall
             this.txtPattern = new System.Windows.Forms.TextBox();
             this.lblDescription = new System.Windows.Forms.Label();
             this.txtDescription = new System.Windows.Forms.TextBox();
+            this.lblExamples = new System.Windows.Forms.Label();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.SuspendLayout();
@@ -61,10 +62,25 @@ namespace pylorak.TinyWall
             this.txtDescription.Size = new System.Drawing.Size(360, 20);
             this.txtDescription.TabIndex = 3;
             //
+            // lblExamples
+            //
+            this.lblExamples.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblExamples.ForeColor = System.Drawing.SystemColors.GrayText;
+            this.lblExamples.Location = new System.Drawing.Point(12, 108);
+            this.lblExamples.Name = "lblExamples";
+            this.lblExamples.Size = new System.Drawing.Size(360, 80);
+            this.lblExamples.TabIndex = 6;
+            this.lblExamples.Text = "Examples (patterns are case-insensitive):\r\n"
+                + "Match by name only:\r\n"
+                + "  \\\\Wispr Flow\\.exe$\r\n"
+                + "Match known folder + name, variable middle path:\r\n"
+                + "  ^C:\\\\Users\\\\.*\\\\AppData\\\\Local\\\\WisprFlow\\\\.*\\\\Wispr Flow\\.exe$";
+            //
             // btnOK
             //
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOK.Location = new System.Drawing.Point(216, 115);
+            this.btnOK.Location = new System.Drawing.Point(216, 198);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 4;
@@ -76,7 +92,7 @@ namespace pylorak.TinyWall
             //
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(297, 115);
+            this.btnCancel.Location = new System.Drawing.Point(297, 198);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 5;
@@ -89,9 +105,10 @@ namespace pylorak.TinyWall
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(384, 150);
+            this.ClientSize = new System.Drawing.Size(384, 233);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOK);
+            this.Controls.Add(this.lblExamples);
             this.Controls.Add(this.txtDescription);
             this.Controls.Add(this.lblDescription);
             this.Controls.Add(this.txtPattern);
@@ -115,5 +132,6 @@ namespace pylorak.TinyWall
         private System.Windows.Forms.TextBox txtDescription;
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.Label lblExamples;
     }
 }

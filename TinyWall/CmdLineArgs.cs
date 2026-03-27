@@ -9,7 +9,8 @@ namespace pylorak.TinyWall
         Controller,
         SelfHosted,
         Install,
-        Uninstall
+        Uninstall,
+        StopService
     }
 
     internal class CmdLineArgs
