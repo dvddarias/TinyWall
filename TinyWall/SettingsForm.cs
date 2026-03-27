@@ -448,13 +448,24 @@ namespace pylorak.TinyWall
 
         private void RebuildRegexList()
         {
+            listRegexPatterns.ItemChecked -= listRegexPatterns_ItemChecked;
             listRegexPatterns.Items.Clear();
             foreach (var entry in TmpConfig.Service.RegexAutoUnblock)
             {
                 var item = new ListViewItem(entry.RegexPattern);
                 item.SubItems.Add(entry.Description);
                 item.Tag = entry;
+                item.Checked = entry.Enabled;
                 listRegexPatterns.Items.Add(item);
+            }
+            listRegexPatterns.ItemChecked += listRegexPatterns_ItemChecked;
+        }
+
+        private void listRegexPatterns_ItemChecked(object? sender, ItemCheckedEventArgs e)
+        {
+            if (e.Item?.Tag is RegexAutoUnblockEntry entry)
+            {
+                entry.Enabled = e.Item.Checked;
             }
         }
 
@@ -478,6 +489,7 @@ namespace pylorak.TinyWall
             using var f = new RegexAutoUnblockForm(existing);
             if (f.ShowDialog(this) == DialogResult.OK)
             {
+                f.Entry.Enabled = existing.Enabled;
                 int index = TmpConfig.Service.RegexAutoUnblock.IndexOf(existing!);
                 if (index >= 0)
                     TmpConfig.Service.RegexAutoUnblock[index] = f.Entry;

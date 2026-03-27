@@ -281,6 +281,7 @@ namespace pylorak.TinyWall
 
         private readonly MouseInterceptor MouseInterceptor = new();
         private readonly System.Threading.Timer UpdateTimer;
+        private readonly System.Threading.Timer NotificationTimer;
         private readonly System.Windows.Forms.Timer ServiceTimer;
         private readonly DateTime AppStarted = DateTime.Now;
         private readonly List<Form> ActiveForms = new();
@@ -349,6 +350,7 @@ namespace pylorak.TinyWall
             MouseInterceptor.MouseLButtonDown += new MouseInterceptor.MouseHookLButtonDown(MouseInterceptor_MouseLButtonDown);
             TrafficTimer = new System.Threading.Timer(TrafficTimerTick, null, Timeout.Infinite, Timeout.Infinite);
             UpdateTimer = new System.Threading.Timer(UpdateTimerTick, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(240));
+            NotificationTimer = new System.Threading.Timer(NotificationTimerTick, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
             ServiceTimer = new System.Windows.Forms.Timer(components);
 
             System.Windows.Forms.Application.Idle += Application_Idle;
@@ -384,6 +386,12 @@ namespace pylorak.TinyWall
                 using (WaitHandle wh = new AutoResetEvent(false))
                 {
                     UpdateTimer.Dispose(wh);
+                    wh.WaitOne();
+                }
+
+                using (WaitHandle wh = new AutoResetEvent(false))
+                {
+                    NotificationTimer.Dispose(wh);
                     wh.WaitOne();
                 }
 
@@ -436,6 +444,11 @@ namespace pylorak.TinyWall
                     VerifyUpdates();
                 });
             }
+        }
+
+        private void NotificationTimerTick(object? state)
+        {
+            SyncCtx?.Post(_ => LoadSettingsFromServer(), null);
         }
 
         private void TrafficTimerTick(object? _)

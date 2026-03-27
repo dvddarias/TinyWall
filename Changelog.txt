@@ -1,6 +1,12 @@
 TinyWall Changelog
 ---------------------
 
+5.1.1 - (27.03.2026.)
+- Add enable/disable checkbox for each regex auto-unblock pattern
+- Fix auto-unblock notification not appearing
+
+---------------------
+
 5.1.0 - (27.03.2026.)
 - Reduce regex auto-unblock latency from up to 60 seconds to ~2 seconds
 

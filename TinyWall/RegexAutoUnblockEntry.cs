@@ -11,12 +11,16 @@ namespace pylorak.TinyWall
         [DataMember(EmitDefaultValue = false)]
         public string Description { get; set; } = string.Empty;
 
+        [DataMember]
+        public bool Enabled { get; set; } = true;
+
         public RegexAutoUnblockEntry() { }
 
-        public RegexAutoUnblockEntry(string pattern, string description)
+        public RegexAutoUnblockEntry(string pattern, string description, bool enabled = true)
         {
             RegexPattern = pattern;
             Description = description;
+            Enabled = enabled;
         }
     }
 }

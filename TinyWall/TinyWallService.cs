@@ -1297,7 +1297,7 @@ namespace pylorak.TinyWall
             var patterns = new List<Regex>();
             foreach (var entry in ActiveConfig.Service.RegexAutoUnblock)
             {
-                if (string.IsNullOrEmpty(entry.RegexPattern))
+                if (!entry.Enabled || string.IsNullOrEmpty(entry.RegexPattern))
                     continue;
 
                 try
@@ -1534,10 +1534,20 @@ namespace pylorak.TinyWall
                             VisibleState.HasPassword = PasswordLock.HasPassword;
                             VisibleState.Locked = PasswordLock.Locked;
 
-                            var ret = args.CreateResponse(GlobalInstances.ServerChangeset, ActiveConfig.Service, VisibleState);
-                            VisibleState.ClientNotifs.Clear();  // TODO: VisibleState is a reference so it cleants notifs before client could receive them
+                            // Snapshot the notification lists before clearing, since VisibleState
+                            // is shared by reference with the response object.
+                            var stateSnapshot = new ServerState
+                            {
+                                HasPassword = VisibleState.HasPassword,
+                                Locked = VisibleState.Locked,
+                                Update = VisibleState.Update,
+                                Mode = VisibleState.Mode,
+                                ClientNotifs = new List<MessageType>(VisibleState.ClientNotifs),
+                                RegexAutoUnblockedApps = new List<string>(VisibleState.RegexAutoUnblockedApps),
+                            };
+                            VisibleState.ClientNotifs.Clear();
                             VisibleState.RegexAutoUnblockedApps.Clear();
-                            return ret;
+                            return args.CreateResponse(GlobalInstances.ServerChangeset, ActiveConfig.Service, stateSnapshot);
                         }
                         else
                         {

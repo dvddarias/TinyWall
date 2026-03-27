@@ -599,6 +599,7 @@
             this.listRegexPatterns.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnRegexPattern,
             this.columnRegexDescription});
+            this.listRegexPatterns.CheckBoxes = true;
             this.listRegexPatterns.FullRowSelect = true;
             this.listRegexPatterns.GridLines = true;
             this.listRegexPatterns.HideSelection = false;
