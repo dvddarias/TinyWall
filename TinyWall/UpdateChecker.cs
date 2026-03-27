@@ -6,6 +6,8 @@ using System.Net;
 using System.Threading;
 using System.Windows.Forms;
 using Microsoft.Samples;
+using TaskDialog = Microsoft.Samples.TaskDialog;
+using TaskDialogIcon = Microsoft.Samples.TaskDialogIcon;
 using pylorak.Windows;
 
 namespace pylorak.TinyWall
@@ -77,7 +79,7 @@ namespace pylorak.TinyWall
         {
             var UpdateModule = UpdateChecker.GetMainAppModule(descriptor)!;
             var oldVersion = new Version(System.Windows.Forms.Application.ProductVersion);
-            var newVersion = new Version(UpdateModule.ComponentVersion);
+            var newVersion = new Version(UpdateModule.ComponentVersion!);
 
             bool win10v1903 = VersionInfo.Win10OrNewer && (Environment.OSVersion.Version.Build >= 18362);
             bool WindowsNew_AnyTwUpdate = win10v1903 && (newVersion > oldVersion);
@@ -115,7 +117,7 @@ namespace pylorak.TinyWall
             State = UpdaterState.DownloadingUpdate;
 
             var tmpFile = Path.GetTempFileName() + ".msi";
-            var UpdateURL = new Uri(mainModule.UpdateURL);
+            var UpdateURL = new Uri(mainModule.UpdateURL!);
             using var HTTPClient = new WebClient();
             HTTPClient.DownloadFileCompleted += new AsyncCompletedEventHandler(Updater_DownloadFinished);
             HTTPClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(Updater_DownloadProgressChanged);
@@ -140,7 +142,7 @@ namespace pylorak.TinyWall
             Utils.StartProcess(localFilePath, string.Empty, false, false);
         }
 
-        private void Updater_DownloadFinished(object sender, AsyncCompletedEventArgs e)
+        private void Updater_DownloadFinished(object? sender, AsyncCompletedEventArgs e)
         {
             if (e.Cancelled || (e.Error != null))
             {

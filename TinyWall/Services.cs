@@ -38,8 +38,8 @@ namespace pylorak.TinyWall
             string ImagePath = string.Empty;
             using (RegistryKey KeyHKLM = Microsoft.Win32.Registry.LocalMachine)
             {
-                using RegistryKey Key = KeyHKLM.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\" + serviceName);
-                ImagePath = (string)Key.GetValue("ImagePath");
+                using RegistryKey Key = KeyHKLM.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\" + serviceName)!;
+                ImagePath = (string)Key!.GetValue("ImagePath")!;
             }
 
             // Remove quotes
@@ -105,7 +105,7 @@ namespace pylorak.TinyWall
 
             foreach (ColumnHeader col in listView.Columns)
             {
-                if (ActiveConfig.Controller.ServicesFormColumnWidths.TryGetValue((string)col.Tag, out int width))
+                if (ActiveConfig.Controller.ServicesFormColumnWidths.TryGetValue((string)col.Tag!, out int width))
                     col.Width = width;
             }
 
@@ -144,7 +144,7 @@ namespace pylorak.TinyWall
 
         private void listView_ColumnClick(object sender, ColumnClickEventArgs e)
         {
-            var oldSorter = (ListViewItemComparer)listView.ListViewItemSorter;
+            var oldSorter = (ListViewItemComparer?)listView.ListViewItemSorter;
             var newSorter = new ListViewItemComparer(e.Column);
             if ((oldSorter != null) && (oldSorter.Column == newSorter.Column))
                 newSorter.Ascending = !oldSorter.Ascending;
@@ -168,7 +168,7 @@ namespace pylorak.TinyWall
 
             ActiveConfig.Controller.ServicesFormColumnWidths.Clear();
             foreach (ColumnHeader col in listView.Columns)
-                ActiveConfig.Controller.ServicesFormColumnWidths.Add((string)col.Tag, col.Width);
+                ActiveConfig.Controller.ServicesFormColumnWidths.Add((string)col.Tag!, col.Width);
 
             ActiveConfig.Controller.Save();
         }

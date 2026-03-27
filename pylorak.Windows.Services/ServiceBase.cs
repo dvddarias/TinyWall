@@ -23,7 +23,6 @@ namespace pylorak.Windows.Services
         public string Name; // only for DBT_DEVTYP_DEVICEINTERFACE
     }
 
-    [InstallerType(typeof(System.ServiceProcess.ServiceProcessInstaller))]
     public abstract class ServiceBase : IDisposable
     {
         [StructLayout(LayoutKind.Sequential)]
@@ -557,7 +556,7 @@ namespace pylorak.Windows.Services
                 {
                     // we increment the pointer first so we skip over the first argument. 
                     argsAsPtr++;
-                    args[index] = Marshal.PtrToStringUni((IntPtr)(*argsAsPtr));
+                    args[index] = Marshal.PtrToStringUni((IntPtr)(*argsAsPtr))!;
                 }
             }
 

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Security;
 using System.Text;
 using System.Runtime.InteropServices;
-using System.Runtime.ConstrainedExecution;
 using Microsoft.Win32.SafeHandles;
 
 namespace pylorak.Windows
@@ -67,7 +66,7 @@ namespace pylorak.Windows
         public void MarshalFromStruct<T>(T obj, int offset = 0) where T : unmanaged
         {
             if (NeedsMarshalDestroy)
-                Marshal.DestroyStructure(this.handle, MarshalDestroyType);
+                Marshal.DestroyStructure(this.handle, MarshalDestroyType!);
 
             int size = Marshal.SizeOf<T>();
             unsafe
@@ -79,7 +78,7 @@ namespace pylorak.Windows
 
         public void MarshalFromManagedStruct<T>(T obj)
         {
-            Marshal.StructureToPtr(obj, this.handle, NeedsMarshalDestroy);
+            Marshal.StructureToPtr(obj!, this.handle, NeedsMarshalDestroy);
             MarshalDestroyType = typeof(T);
         }
 
@@ -107,7 +106,7 @@ namespace pylorak.Windows
             {
                 if (NeedsMarshalDestroy)
                 {
-                    Marshal.DestroyStructure(this.handle, MarshalDestroyType);
+                    Marshal.DestroyStructure(this.handle, MarshalDestroyType!);
                     MarshalDestroyType = null;
                 }
                 NativeMethods.GlobalFree(this.handle);
@@ -130,7 +129,7 @@ namespace pylorak.Windows
         {
             if (NeedsMarshalDestroy)
             {
-                Marshal.DestroyStructure(this.handle, MarshalDestroyType);
+                Marshal.DestroyStructure(this.handle, MarshalDestroyType!);
                 MarshalDestroyType = null;
             }
             bool ret = (IntPtr.Zero == NativeMethods.GlobalFree(handle));
@@ -145,7 +144,6 @@ namespace pylorak.Windows
         private static class NativeMethods
         {
             [DllImport("kernel32", SetLastError = true)]
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
             public static extern bool CloseHandle(IntPtr hHandle);
         }
 
@@ -156,7 +154,6 @@ namespace pylorak.Windows
             SetHandle(handle);
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         override protected bool ReleaseHandle()
         {
             return NativeMethods.CloseHandle(handle);
@@ -175,7 +172,6 @@ namespace pylorak.Windows
             internal static extern IntPtr GetProcessHeap();
 
             [DllImport("kernel32", SetLastError = true)]
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
             [return: MarshalAs(UnmanagedType.Bool)]
             internal static extern bool HeapFree(IntPtr heap, uint flags, IntPtr mem);
         }
@@ -201,8 +197,6 @@ namespace pylorak.Windows
             this.handle = IntPtr.Zero;
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
-        [PrePrepareMethod]
         protected override bool ReleaseHandle()
         {
             return NativeMethods.HeapFree(ProcessHeap, 0, handle);
@@ -235,8 +229,7 @@ namespace pylorak.Windows
         [SuppressUnmanagedCodeSecurity]
         private static class NativeMethods
         {
-            [DllImport("advapi32"),
-             ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+            [DllImport("advapi32")]
             public static extern int RegCloseKey(IntPtr hKey);
 
             [DllImport("advapi32", CharSet = CharSet.Unicode)]
@@ -306,7 +299,6 @@ namespace pylorak.Windows
             internal static extern IntPtr LocalAlloc(uint uFlags, UIntPtr dwBytes);
 
             [DllImport("kernel32.dll")]
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
             internal static extern IntPtr LocalFree(IntPtr hMem);
         }
 
@@ -328,8 +320,6 @@ namespace pylorak.Windows
             this.handle = IntPtr.Zero;
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
-        [PrePrepareMethod]
         protected override bool ReleaseHandle()
         {
             return (IntPtr.Zero == NativeMethods.LocalFree(handle));
@@ -429,8 +419,6 @@ namespace pylorak.Windows
             this.handle = IntPtr.Zero;
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
-        [PrePrepareMethod]
         protected override bool ReleaseHandle()
         {
             return (IntPtr.Zero == NativeMethods.FreeSid(handle));

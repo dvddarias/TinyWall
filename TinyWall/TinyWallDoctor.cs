@@ -1,9 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Configuration.Install;
 using System.Diagnostics;
 using System.ServiceProcess;
-using TaskScheduler;
 using pylorak.Windows;
 using pylorak.Windows.Services;
 using pylorak.Windows.WFP;
@@ -14,6 +12,15 @@ namespace pylorak.TinyWall
     internal static class TinyWallDoctor
     {
         private static readonly string CONTROLLER_START_TASKSCH_NAME = "TinyWall Controller";
+
+        // Task Scheduler COM enum constants
+        private const int TASK_LOGON_INTERACTIVE_TOKEN = 3;
+        private const int TASK_RUNLEVEL_HIGHEST = 1;
+        private const int TASK_COMPATIBILITY_V2 = 3;
+        private const int TASK_INSTANCES_PARALLEL = 2;
+        private const int TASK_TRIGGER_LOGON = 9;
+        private const int TASK_ACTION_EXEC = 0;
+        private const int TASK_CREATE_OR_UPDATE = 6;
 
         internal static bool IsServiceRunning(string logContext, bool installing)
         {
@@ -57,10 +64,19 @@ namespace pylorak.TinyWall
 
             if (Utils.RunningAsAdmin())
             {
-                // Run installers
+                // Install service
                 try
                 {
-                    ManagedInstallerClass.InstallHelper(new string[] { "/i", Utils.ExecutablePath });
+                    using var scm = new ServiceControlManager(
+                        ServiceControlAccessRights.SC_MANAGER_CREATE_SERVICE |
+                        ServiceControlAccessRights.SC_MANAGER_CONNECT);
+                    scm.InstallService(
+                        TinyWallService.SERVICE_NAME,
+                        TinyWallService.SERVICE_DISPLAY_NAME,
+                        Utils.ExecutablePath + " /service",
+                        TinyWallService.ServiceDependencies,
+                        0x02,  // SERVICE_AUTO_START
+                        "NetworkProvider");
                 }
                 catch(Exception e)
                 {
@@ -118,7 +134,7 @@ namespace pylorak.TinyWall
                 frm.Location = new System.Drawing.Point(rect.Bottom + 10, rect.Right + 10);
                 frm.Show();
                 frm.Focus();
-                frm.BringToFront(); 
+                frm.BringToFront();
                 frm.TopMost = true;
 
                 if (System.Windows.Forms.MessageBox.Show(frm,
@@ -214,7 +230,7 @@ namespace pylorak.TinyWall
             try
             {
                 // Disable automatic start of controller
-                var taskService = new TaskScheduler.TaskScheduler();
+                dynamic taskService = Activator.CreateInstance(Type.GetTypeFromProgID("Schedule.Service")!)!;
                 taskService.Connect();
                 taskService.GetFolder(@"\").DeleteTask(CONTROLLER_START_TASKSCH_NAME, 0);
             }
@@ -230,7 +246,8 @@ namespace pylorak.TinyWall
 
             try
             {
-                ManagedInstallerClass.InstallHelper(new string[] { "/u", Utils.ExecutablePath });
+                using var scm = new ServiceControlManager(ServiceControlAccessRights.SC_MANAGER_CONNECT);
+                scm.UninstallService(TinyWallService.SERVICE_NAME);
             }
             catch (Exception e) { Utils.LogException(e, Utils.LOG_ID_INSTALLER); }
 
@@ -276,27 +293,26 @@ namespace pylorak.TinyWall
             try
             {
                 const string INTERACTIVE_GROUP_SID = "S-1-5-4";
-                const int TASK_CREATE_OR_UPDATE = 6;
-                var taskService = new TaskScheduler.TaskScheduler();
+                dynamic taskService = Activator.CreateInstance(Type.GetTypeFromProgID("Schedule.Service")!)!;
                 taskService.Connect();
-                var td = taskService.NewTask(0);
+                dynamic td = taskService.NewTask(0);
                 td.RegistrationInfo.Author = "TinyWall, Károly Pados";
                 td.RegistrationInfo.Description = "This task starts the TinyWall tray icon when a user is logged in.";
                 td.Settings.Enabled = true;
                 td.Principal.GroupId = INTERACTIVE_GROUP_SID;
-                td.Principal.LogonType = _TASK_LOGON_TYPE.TASK_LOGON_INTERACTIVE_TOKEN;
-                td.Principal.RunLevel = _TASK_RUNLEVEL.TASK_RUNLEVEL_HIGHEST;
-                td.Settings.Compatibility = _TASK_COMPATIBILITY.TASK_COMPATIBILITY_V2;
+                td.Principal.LogonType = TASK_LOGON_INTERACTIVE_TOKEN;
+                td.Principal.RunLevel = TASK_RUNLEVEL_HIGHEST;
+                td.Settings.Compatibility = TASK_COMPATIBILITY_V2;
                 td.Settings.Enabled = true;
                 td.Settings.StopIfGoingOnBatteries = false;
                 td.Settings.Hidden = false;
                 td.Settings.DisallowStartIfOnBatteries = false;
                 td.Settings.ExecutionTimeLimit = "PT0S";
-                td.Settings.MultipleInstances = _TASK_INSTANCES_POLICY.TASK_INSTANCES_PARALLEL;
-                td.Triggers.Create(_TASK_TRIGGER_TYPE2.TASK_TRIGGER_LOGON);
-                var act = (IExecAction)td.Actions.Create(_TASK_ACTION_TYPE.TASK_ACTION_EXEC);
+                td.Settings.MultipleInstances = TASK_INSTANCES_PARALLEL;
+                td.Triggers.Create(TASK_TRIGGER_LOGON);
+                dynamic act = td.Actions.Create(TASK_ACTION_EXEC);
                 act.Path = Utils.ExecutablePath;
-                taskService.GetFolder(@"\").RegisterTaskDefinition(CONTROLLER_START_TASKSCH_NAME, td, TASK_CREATE_OR_UPDATE, null, null, _TASK_LOGON_TYPE.TASK_LOGON_INTERACTIVE_TOKEN);
+                taskService.GetFolder(@"\").RegisterTaskDefinition(CONTROLLER_START_TASKSCH_NAME, td, TASK_CREATE_OR_UPDATE, null, null, TASK_LOGON_INTERACTIVE_TOKEN);
             }
             catch (System.Runtime.InteropServices.COMException e)
             {

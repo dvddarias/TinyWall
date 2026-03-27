@@ -15,7 +15,7 @@ namespace pylorak.Utilities
 
         private static string RandomFileInSameDir(string file)
         {
-            string targetDir = Path.GetDirectoryName(file);
+            string targetDir = Path.GetDirectoryName(file)!;
             return Path.Combine(targetDir, Path.GetRandomFileName());
         }
 

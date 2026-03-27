@@ -33,7 +33,7 @@ namespace pylorak.Utilities
             }
         }
 
-        private void DelayExpired(object args)
+        private void DelayExpired(object? args)
         {
             lock(Locker)
             {

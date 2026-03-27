@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Windows.Forms;
 using Microsoft.Samples;
+using TaskDialog = Microsoft.Samples.TaskDialog;
 using pylorak.Utilities;
 using pylorak.Windows;
 
@@ -337,8 +338,8 @@ namespace pylorak.TinyWall
                 }
                 else
                 {
-                    Thread.CurrentThread.CurrentUICulture = Program.DefaultOsCulture;
-                    System.Windows.Forms.Application.CurrentCulture = Program.DefaultOsCulture;
+                    Thread.CurrentThread.CurrentUICulture = Program.DefaultOsCulture!;
+                    System.Windows.Forms.Application.CurrentCulture = Program.DefaultOsCulture!;
                 }
             }
             catch { }
@@ -355,7 +356,7 @@ namespace pylorak.TinyWall
             ProcessManager.WakeMessageQueues(p);
         }
 
-        private void Application_Idle(object sender, EventArgs e)
+        private void Application_Idle(object? sender, EventArgs e)
         {
             if (SyncCtx == null)
             {
@@ -365,7 +366,7 @@ namespace pylorak.TinyWall
             }
         }
 
-        private void TrayMenu_Closed(object sender, ToolStripDropDownClosedEventArgs e)
+        private void TrayMenu_Closed(object? sender, ToolStripDropDownClosedEventArgs e)
         {
             TrayMenuShowing = false;
         }
@@ -408,9 +409,9 @@ namespace pylorak.TinyWall
                 if (descriptor is not null)
                 {
                     UpdateModule MainAppModule = UpdateChecker.GetMainAppModule(descriptor)!;
-                    if (new Version(MainAppModule.ComponentVersion) > new Version(System.Windows.Forms.Application.ProductVersion))
+                    if (new Version(MainAppModule.ComponentVersion!) > new Version(System.Windows.Forms.Application.ProductVersion!))
                     {
-                        Utils.Invoke(SyncCtx, (SendOrPostCallback)delegate(object o)
+                        Utils.Invoke(SyncCtx, (SendOrPostCallback)delegate(object? o)
                         {
                             string prompt = string.Format(CultureInfo.CurrentCulture, pylorak.TinyWall.Resources.Messages.UpdateAvailableBubble, MainAppModule.ComponentVersion);
                             ShowBalloonTip(prompt, ToolTipIcon.Info, 5000, StartUpdate, MainAppModule.UpdateURL);
@@ -426,11 +427,11 @@ namespace pylorak.TinyWall
             }
         }
 
-        private void UpdateTimerTick(object state)
+        private void UpdateTimerTick(object? state)
         {
             if (ActiveConfig.Service.AutoUpdateCheck)
             {
-                ThreadPool.QueueUserWorkItem((WaitCallback)delegate (object dummy)
+                ThreadPool.QueueUserWorkItem((WaitCallback)delegate (object? dummy)
                 {
                     VerifyUpdates();
                 });
@@ -519,27 +520,27 @@ namespace pylorak.TinyWall
             }
         }
 
-        private void StartUpdate(object sender, AnyEventArgs e)
+        private void StartUpdate(object? sender, AnyEventArgs e)
         {
             Updater.StartUpdate();
         }
 
-        void HotKeyWhitelistProcess_Pressed(object sender, HandledEventArgs e)
+        void HotKeyWhitelistProcess_Pressed(object? sender, HandledEventArgs e)
         {
             mnuWhitelistByProcess_Click(this, EventArgs.Empty);
         }
 
-        void HotKeyWhitelistExecutable_Pressed(object sender, HandledEventArgs e)
+        void HotKeyWhitelistExecutable_Pressed(object? sender, HandledEventArgs e)
         {
             mnuWhitelistByExecutable_Click(this, EventArgs.Empty);
         }
 
-        void HotKeyWhitelistWindow_Pressed(object sender, HandledEventArgs e)
+        void HotKeyWhitelistWindow_Pressed(object? sender, HandledEventArgs e)
         {
             mnuWhitelistByWindow_Click(this, EventArgs.Empty);
         }
 
-        private void mnuQuit_Click(object sender, EventArgs e)
+        private void mnuQuit_Click(object? sender, EventArgs e)
         {
             Tray.Visible = false;
             ExitThread();
@@ -623,7 +624,7 @@ namespace pylorak.TinyWall
             }
         }
 
-        private void mnuModeDisabled_Click(object sender, EventArgs e)
+        private void mnuModeDisabled_Click(object? sender, EventArgs e)
         {
             if (!EnsureUnlockedServer())
                 return;
@@ -632,7 +633,7 @@ namespace pylorak.TinyWall
             UpdateDisplay();
         }
 
-        private void mnuModeNormal_Click(object sender, EventArgs e)
+        private void mnuModeNormal_Click(object? sender, EventArgs e)
         {
             if (!EnsureUnlockedServer())
                 return;
@@ -641,7 +642,7 @@ namespace pylorak.TinyWall
             UpdateDisplay();
         }
 
-        private void mnuModeBlockAll_Click(object sender, EventArgs e)
+        private void mnuModeBlockAll_Click(object? sender, EventArgs e)
         {
             if (!EnsureUnlockedServer())
                 return;
@@ -650,7 +651,7 @@ namespace pylorak.TinyWall
             UpdateDisplay();
         }
 
-        private void mnuAllowOutgoing_Click(object sender, EventArgs e)
+        private void mnuAllowOutgoing_Click(object? sender, EventArgs e)
         {
             if (!EnsureUnlockedServer())
                 return;
@@ -703,13 +704,21 @@ namespace pylorak.TinyWall
             }
             FirewallState.ClientNotifs.Clear();
 
+            // Show notifications for regex auto-unblocked apps
+            if (FirewallState.RegexAutoUnblockedApps.Count > 0)
+            {
+                string msg = string.Join("\n", FirewallState.RegexAutoUnblockedApps);
+                ShowBalloonTip(string.Format(Resources.Messages.AutoUnblockedNotification, msg), ToolTipIcon.Info);
+                FirewallState.RegexAutoUnblockedApps.Clear();
+            }
+
             if (updated)
                 UpdateDisplay();
 
             return updated;
         }
 
-        private void TrayMenu_Opening(object sender, CancelEventArgs e)
+        private void TrayMenu_Opening(object? sender, CancelEventArgs e)
         {
             e.Cancel = false;
             if (FirewallState.Mode == FirewallMode.Unknown)
@@ -727,7 +736,7 @@ namespace pylorak.TinyWall
             UpdateDisplay();
         }
 
-        private void mnuWhitelistByExecutable_Click(object sender, EventArgs e)
+        private void mnuWhitelistByExecutable_Click(object? sender, EventArgs e)
         {
             if (FlashIfOpen(typeof(SettingsForm)))
                 return;
@@ -793,7 +802,7 @@ namespace pylorak.TinyWall
             AddExceptions(exceptions);
         }
 
-        private void mnuWhitelistByProcess_Click(object sender, EventArgs e)
+        private void mnuWhitelistByProcess_Click(object? sender, EventArgs e)
         {
             if (FlashIfOpen(typeof(SettingsForm)))
                 return;
@@ -896,7 +905,7 @@ namespace pylorak.TinyWall
             return FlashIfOpen(frm.GetType());
         }
 
-        private void mnuManage_Click(object sender, EventArgs e)
+        private void mnuManage_Click(object? sender, EventArgs e)
         {
             if (!EnsureUnlockedServer())
                 return;
@@ -959,7 +968,7 @@ namespace pylorak.TinyWall
             }
         }
 
-        private void mnuWhitelistByWindow_Click(object sender, EventArgs e)
+        private void mnuWhitelistByWindow_Click(object? sender, EventArgs e)
         {
             if (!EnsureUnlockedServer())
                 return;
@@ -991,9 +1000,9 @@ namespace pylorak.TinyWall
             // another thread that will invoke the body on our own thread again makes sure that the hook
             // has terminated by the time we unhook it, resolving all our problems.
 
-            ThreadPool.QueueUserWorkItem((WaitCallback)delegate(object state)
+            ThreadPool.QueueUserWorkItem((WaitCallback)delegate(object? state)
             {
-                Utils.Invoke(SyncCtx, (SendOrPostCallback)delegate(object o)
+                Utils.Invoke(SyncCtx, (SendOrPostCallback)delegate(object? o)
                 {
                     MouseInterceptor.Stop();
 
@@ -1023,7 +1032,7 @@ namespace pylorak.TinyWall
         }
 
         // Called when a user double-clicks on a popup to edit the most recent exception
-        private void EditRecentException(object sender, AnyEventArgs e)
+        private void EditRecentException(object? sender, AnyEventArgs e)
         {
             using var f = new ApplicationExceptionForm((FirewallExceptionV3)e.Arg!);
             if (f.ShowDialog() == DialogResult.Cancel)
@@ -1126,7 +1135,7 @@ namespace pylorak.TinyWall
             return false;
         }
 
-        private void mnuLock_Click(object sender, EventArgs e)
+        private void mnuLock_Click(object? sender, EventArgs e)
         {
             MessageType lockResp = GlobalInstances.Controller.LockServer();
             if ((lockResp == MessageType.LOCK) || (lockResp== MessageType.RESPONSE_LOCKED))
@@ -1137,7 +1146,7 @@ namespace pylorak.TinyWall
             UpdateDisplay();
         }
 
-        private void mnuAllowLocalSubnet_Click(object sender, EventArgs e)
+        private void mnuAllowLocalSubnet_Click(object? sender, EventArgs e)
         {
             if (!EnsureUnlockedServer())
                 return;
@@ -1152,7 +1161,7 @@ namespace pylorak.TinyWall
             mnuAllowLocalSubnet.Checked = ActiveConfig.Service.ActiveProfile.AllowLocalSubnet;
         }
 
-        private void mnuEnableHostsBlocklist_Click(object sender, EventArgs e)
+        private void mnuEnableHostsBlocklist_Click(object? sender, EventArgs e)
         {
             if (!EnsureUnlockedServer())
                 return;
@@ -1203,7 +1212,7 @@ namespace pylorak.TinyWall
             SetHotkey(resources, ref HotKeyWhitelistProcess, new HandledEventHandler(HotKeyWhitelistProcess_Pressed), Keys.P, mnuWhitelistByProcess, "mnuWhitelistByProcess");
         }
 
-        private void mnuElevate_Click(object sender, EventArgs e)
+        private void mnuElevate_Click(object? sender, EventArgs e)
         {
             try
             {
@@ -1216,7 +1225,7 @@ namespace pylorak.TinyWall
             }
         }
 
-        private void mnuConnections_Click(object sender, EventArgs e)
+        private void mnuConnections_Click(object? sender, EventArgs e)
         {
             if (FlashIfOpen(typeof(SettingsForm)))
                 return;
@@ -1235,7 +1244,7 @@ namespace pylorak.TinyWall
             }
         }
 
-        private void Tray_MouseClick(object sender, MouseEventArgs e)
+        private void Tray_MouseClick(object? sender, MouseEventArgs e)
         {
             if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
@@ -1248,7 +1257,7 @@ namespace pylorak.TinyWall
             }
         }
 
-        private void Tray_BalloonTipClicked(object sender, EventArgs e)
+        private void Tray_BalloonTipClicked(object? sender, EventArgs e)
         {
             BalloonClickedCallback?.Invoke(Tray, new AnyEventArgs(BalloonClickedCallbackArgument));
         }
@@ -1262,9 +1271,9 @@ namespace pylorak.TinyWall
             catch
             {
                 GlobalInstances.AppDatabase = new DatabaseClasses.AppDatabase();
-                ThreadPool.QueueUserWorkItem((WaitCallback)delegate(object state)
+                ThreadPool.QueueUserWorkItem((WaitCallback)delegate(object? state)
                 {
-                    Utils.Invoke(SyncCtx, (SendOrPostCallback)delegate(object o)
+                    Utils.Invoke(SyncCtx, (SendOrPostCallback)delegate(object? o)
                     {
                         ShowBalloonTip(Resources.Messages.DatabaseIsMissingOrCorrupt, ToolTipIcon.Warning);
                     });
@@ -1282,7 +1291,7 @@ namespace pylorak.TinyWall
             ApplyFirewallSettings(confCopy);
         }
 
-        private void mnuModeLearn_Click(object sender, EventArgs e)
+        private void mnuModeLearn_Click(object? sender, EventArgs e)
         {
             if (!EnsureUnlockedServer())
                 return;
@@ -1311,7 +1320,7 @@ namespace pylorak.TinyWall
             // We will load our database parallel to other things to improve startup performance
             using (var barrier = new ThreadBarrier(2))
             {
-                ThreadPool.QueueUserWorkItem((WaitCallback)delegate(object state)
+                ThreadPool.QueueUserWorkItem((WaitCallback)delegate(object? state)
                 {
                     try
                     {
@@ -1379,7 +1388,7 @@ namespace pylorak.TinyWall
             }
         }
 
-        private void ServiceTimer_Tick(object sender, EventArgs e)
+        private void ServiceTimer_Tick(object? sender, EventArgs e)
         {
             LoadSettingsFromServer(out bool comError, true);
             bool maxTimeElapsed = (DateTime.Now - AppStarted) > TimeSpan.FromSeconds(90);

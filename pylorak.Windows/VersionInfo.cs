@@ -106,7 +106,7 @@ namespace pylorak.Windows
             }
         }
 
-        public static Version LibraryVersion { get; } = typeof(VersionInfo).Assembly.GetName().Version;
+        public static Version LibraryVersion { get; } = typeof(VersionInfo).Assembly.GetName().Version!;
 
         public static bool Win7OrNewer { get; } = WinVerEqOrGr(6, 1);
         public static bool Win8OrNewer { get; } = WinVerEqOrGr(6, 2);

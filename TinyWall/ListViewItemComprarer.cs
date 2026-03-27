@@ -17,8 +17,12 @@ namespace pylorak.TinyWall
             ImageList = imageList;
         }
 
-        public int Compare(ListViewItem x, ListViewItem y)
+        public int Compare(ListViewItem? x, ListViewItem? y)
         {
+            if (x is null && y is null) return 0;
+            if (x is null) return -1;
+            if (y is null) return 1;
+
             int order = Ascending ? +1 : -1;
 
             if (ImageList != null)
@@ -36,12 +40,16 @@ namespace pylorak.TinyWall
             return order * String.Compare(x.SubItems[Column].Text, y.SubItems[Column].Text, StringComparison.CurrentCulture);
         }
 
-        int IComparer.Compare(object x, object y)
+        int IComparer.Compare(object? x, object? y)
         {
+            if (x is null && y is null) return 0;
+            if (x is null) return -1;
+            if (y is null) return 1;
+
             if ((x is ListViewItem lx) && (y is ListViewItem ly))
                 return Compare(lx, ly);
             else
-                throw new ArgumentException($"Both arguments must by of type {nameof(ListViewItem)}.");
+                throw new ArgumentException($"Both arguments must be of type {nameof(ListViewItem)}.");
         }
 
         internal int Column { get; private set; } = 0;

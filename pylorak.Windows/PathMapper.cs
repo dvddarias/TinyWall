@@ -248,7 +248,7 @@ namespace pylorak.Windows
 
             if (queueWork)
             {
-                ThreadPool.QueueUserWorkItem(delegate (object arg)
+                ThreadPool.QueueUserWorkItem(delegate (object? arg)
                 {
                     try
                     {
@@ -351,13 +351,13 @@ namespace pylorak.Windows
                     char driveLetter = char.ToUpperInvariant(ret[0]);
                     using (var networkKey = Registry.CurrentUser.OpenSubKey("Network", false))
                     {
-                        var subkeys = networkKey.GetSubKeyNames();
+                        var subkeys = networkKey!.GetSubKeyNames();
                         foreach (var sk in subkeys)
                         {
                             if ((sk.Length == 1) && (char.ToUpperInvariant(sk[0]) == driveLetter))
                             {
                                 using var driveKey = networkKey.OpenSubKey(sk, false);
-                                ret = SpanUtils.CombinePath((driveKey.GetValue("RemotePath") as string).AsSpan(), ret.Slice(3)).AsSpan();
+                                ret = SpanUtils.CombinePath((driveKey!.GetValue("RemotePath") as string).AsSpan(), ret.Slice(3)).AsSpan();
                                 break;
                             }
                         }

@@ -170,7 +170,7 @@ namespace pylorak.Utilities
             }
         }
 
-        public bool Equals(IpAddrMask other)
+        public bool Equals(IpAddrMask? other)
         {
             if (other == null)
                 return false;
@@ -178,7 +178,7 @@ namespace pylorak.Utilities
             return (PrefixLen == other.PrefixLen) && Address.Equals(other.Address);
         }
 
-        public override bool Equals(Object obj)
+        public override bool Equals(object? obj)
         {
             if (obj == null)
                 return false;

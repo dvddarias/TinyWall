@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
-using System.Runtime.ConstrainedExecution;
 using System.Security;
 
 namespace pylorak.Windows.WFP
@@ -13,7 +11,6 @@ namespace pylorak.Windows.WFP
         internal static class NativeMethods
         {
             [DllImport("FWPUClnt.dll", EntryPoint = "FwpmProviderCreateEnumHandle0")]
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
             internal static extern uint FwpmProviderCreateEnumHandle0(
                 [In] FwpmEngineSafeHandle engineHandle,
                 [In] IntPtr enumTemplate,

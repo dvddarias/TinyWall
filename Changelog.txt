@@ -1,6 +1,25 @@
 TinyWall Changelog
 ---------------------
 
+5.0.0 - Major release (27.03.2026.)
+- Port from .NET Framework 4.8 to .NET 9
+- Remove dependency on Visual Studio, COM tooling, and WiX installer
+- Build with just `dotnet build` using the .NET 9 SDK
+- Replace COM interop (NetFwTypeLib, TaskScheduler) with dynamic COM
+- Replace ManagedInstallerClass with direct P/Invoke service management (CreateService/DeleteService)
+- Fix all nullable reference type warnings across the codebase
+- Remove obsolete CER (Constrained Execution Regions) attributes
+- Update DPI handling to use ApplicationHighDpiMode project property
+
+---------------------
+
+3.5.0 - Feature release (27.03.2026.)
+- Add regex auto-unblock feature: define regex patterns to automatically unblock matching executables
+- New "Auto-Unblock" tab in Settings for managing regex patterns
+- Show tray notification when an executable is auto-unblocked by a regex pattern
+
+---------------------
+
 3.4.1 - Maintenance release (06.04.2025.)
 - Only enumerate UWP packages on system if actually needed
 - Add Last Modified column to application exceptions list

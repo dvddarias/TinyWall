@@ -38,7 +38,7 @@ namespace pylorak.TinyWall
 
         public HashSet<string> GetServicesInPid(uint pid)
         {
-            if (Cache.TryGetValue(pid, out HashSet<string> set))
+            if (Cache.TryGetValue(pid, out HashSet<string>? set))
                 return new HashSet<string>(set);
             else
                 return new HashSet<string>();

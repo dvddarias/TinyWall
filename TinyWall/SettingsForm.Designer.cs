@@ -91,9 +91,18 @@
             this.btnWeb = new System.Windows.Forms.Button();
             this.sfd = new System.Windows.Forms.SaveFileDialog();
             this.ofd = new System.Windows.Forms.OpenFileDialog();
+            this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.lblRegexHelp = new System.Windows.Forms.Label();
+            this.listRegexPatterns = new System.Windows.Forms.ListView();
+            this.columnRegexPattern = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnRegexDescription = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.btnRegexAdd = new System.Windows.Forms.Button();
+            this.btnRegexEdit = new System.Windows.Forms.Button();
+            this.btnRegexRemove = new System.Windows.Forms.Button();
             this.tabPage3.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.tabPage1.SuspendLayout();
+            this.tabPage5.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -433,6 +442,7 @@
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Controls.Add(this.tabPage5);
             this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
@@ -555,9 +565,105 @@
             this.btnWeb.Name = "btnWeb";
             this.btnWeb.UseVisualStyleBackColor = true;
             this.btnWeb.Click += new System.EventHandler(this.btnWeb_Click);
-            // 
+            //
+            // tabPage5
+            //
+            this.tabPage5.Controls.Add(this.lblRegexHelp);
+            this.tabPage5.Controls.Add(this.btnRegexRemove);
+            this.tabPage5.Controls.Add(this.btnRegexEdit);
+            this.tabPage5.Controls.Add(this.btnRegexAdd);
+            this.tabPage5.Controls.Add(this.listRegexPatterns);
+            this.tabPage5.Location = new System.Drawing.Point(4, 22);
+            this.tabPage5.Name = "tabPage5";
+            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage5.Size = new System.Drawing.Size(506, 372);
+            this.tabPage5.TabIndex = 4;
+            this.tabPage5.Text = "Auto-Unblock";
+            this.tabPage5.UseVisualStyleBackColor = true;
+            //
+            // lblRegexHelp
+            //
+            this.lblRegexHelp.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblRegexHelp.Location = new System.Drawing.Point(6, 8);
+            this.lblRegexHelp.Name = "lblRegexHelp";
+            this.lblRegexHelp.Size = new System.Drawing.Size(494, 30);
+            this.lblRegexHelp.TabIndex = 0;
+            this.lblRegexHelp.Text = "Executables whose full path matches any regex pattern below will be automatically unblocked.";
+            //
+            // listRegexPatterns
+            //
+            this.listRegexPatterns.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.listRegexPatterns.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnRegexPattern,
+            this.columnRegexDescription});
+            this.listRegexPatterns.FullRowSelect = true;
+            this.listRegexPatterns.GridLines = true;
+            this.listRegexPatterns.HideSelection = false;
+            this.listRegexPatterns.Location = new System.Drawing.Point(6, 41);
+            this.listRegexPatterns.Name = "listRegexPatterns";
+            this.listRegexPatterns.Size = new System.Drawing.Size(410, 325);
+            this.listRegexPatterns.TabIndex = 1;
+            this.listRegexPatterns.UseCompatibleStateImageBehavior = false;
+            this.listRegexPatterns.View = System.Windows.Forms.View.Details;
+            this.listRegexPatterns.DoubleClick += new System.EventHandler(this.btnRegexEdit_Click);
+            //
+            // columnRegexPattern
+            //
+            this.columnRegexPattern.Text = "Pattern";
+            this.columnRegexPattern.Width = 250;
+            //
+            // columnRegexDescription
+            //
+            this.columnRegexDescription.Text = "Description";
+            this.columnRegexDescription.Width = 150;
+            //
+            // btnRegexAdd
+            //
+            this.btnRegexAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnRegexAdd.Image = global::pylorak.TinyWall.Resources.Icons.add;
+            this.btnRegexAdd.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnRegexAdd.Location = new System.Drawing.Point(422, 41);
+            this.btnRegexAdd.Name = "btnRegexAdd";
+            this.btnRegexAdd.Size = new System.Drawing.Size(78, 28);
+            this.btnRegexAdd.TabIndex = 2;
+            this.btnRegexAdd.Text = "Add";
+            this.btnRegexAdd.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.btnRegexAdd.UseVisualStyleBackColor = true;
+            this.btnRegexAdd.Click += new System.EventHandler(this.btnRegexAdd_Click);
+            //
+            // btnRegexEdit
+            //
+            this.btnRegexEdit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnRegexEdit.Image = global::pylorak.TinyWall.Resources.Icons.modify;
+            this.btnRegexEdit.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnRegexEdit.Location = new System.Drawing.Point(422, 75);
+            this.btnRegexEdit.Name = "btnRegexEdit";
+            this.btnRegexEdit.Size = new System.Drawing.Size(78, 28);
+            this.btnRegexEdit.TabIndex = 3;
+            this.btnRegexEdit.Text = "Edit";
+            this.btnRegexEdit.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.btnRegexEdit.UseVisualStyleBackColor = true;
+            this.btnRegexEdit.Click += new System.EventHandler(this.btnRegexEdit_Click);
+            //
+            // btnRegexRemove
+            //
+            this.btnRegexRemove.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnRegexRemove.Image = global::pylorak.TinyWall.Resources.Icons.remove;
+            this.btnRegexRemove.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnRegexRemove.Location = new System.Drawing.Point(422, 109);
+            this.btnRegexRemove.Name = "btnRegexRemove";
+            this.btnRegexRemove.Size = new System.Drawing.Size(78, 28);
+            this.btnRegexRemove.TabIndex = 4;
+            this.btnRegexRemove.Text = "Remove";
+            this.btnRegexRemove.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.btnRegexRemove.UseVisualStyleBackColor = true;
+            this.btnRegexRemove.Click += new System.EventHandler(this.btnRegexRemove_Click);
+            //
             // sfd
-            // 
+            //
             this.sfd.DefaultExt = "xml";
             // 
             // SettingsForm
@@ -581,6 +687,7 @@
             this.tabPage2.PerformLayout();
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
+            this.tabPage5.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.groupBox1.ResumeLayout(false);
@@ -657,5 +764,13 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.Button btnGithub;
         private System.Windows.Forms.ColumnHeader columnLastModified;
+        private System.Windows.Forms.TabPage tabPage5;
+        private System.Windows.Forms.Label lblRegexHelp;
+        private System.Windows.Forms.ListView listRegexPatterns;
+        private System.Windows.Forms.ColumnHeader columnRegexPattern;
+        private System.Windows.Forms.ColumnHeader columnRegexDescription;
+        private System.Windows.Forms.Button btnRegexAdd;
+        private System.Windows.Forms.Button btnRegexEdit;
+        private System.Windows.Forms.Button btnRegexRemove;
     }
 }

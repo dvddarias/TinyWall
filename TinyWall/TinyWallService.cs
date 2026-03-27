@@ -12,6 +12,7 @@ using pylorak.Windows;
 using pylorak.Windows.Services;
 using pylorak.Windows.WFP;
 using pylorak.Windows.WFP.Interop;
+using System.Text.RegularExpressions;
 using pylorak.Utilities;
 
 namespace pylorak.TinyWall
@@ -44,6 +45,10 @@ namespace pylorak.TinyWall
         // Context needed for learning mode
         private readonly FirewallLogWatcher LogWatcher = new();
         private readonly List<FirewallExceptionV3> LearningNewExceptions = new();
+
+        // Context needed for regex auto-unblock
+        private readonly List<FirewallExceptionV3> RegexAutoUnblockNewExceptions = new();
+        private List<Regex>? CompiledRegexPatterns;
 
         // Context for auto rule inheritance
         private readonly object InheritanceGuard = new();
@@ -249,7 +254,7 @@ namespace pylorak.TinyWall
                                     break;
                             }
 
-                            if (ChildInheritance.TryGetValue(parentEntry.ImagePath, out List<FirewallExceptionV3> exList))
+                            if (ChildInheritance.TryGetValue(parentEntry.ImagePath, out List<FirewallExceptionV3>? exList))
                             {
                                 var subj = new ExecutableSubject(procPath);
                                 foreach (var userEx in exList)
@@ -494,12 +499,9 @@ namespace pylorak.TinyWall
             {
                 if (-1 != str.IndexOf('-'))
                 {
-                    ReadOnlySpan<char> min, max;
-                    using (var enumerator = str.Split('-'))
-                    {
-                        enumerator.MoveNext(); min = enumerator.Current;
-                        enumerator.MoveNext(); max = enumerator.Current;
-                    }
+                    var enumerator = str.Split('-');
+                    enumerator.MoveNext(); ReadOnlySpan<char> min = str[enumerator.Current];
+                    enumerator.MoveNext(); ReadOnlySpan<char> max = str[enumerator.Current];
                     return (min.DecimalToUInt16(), max.DecimalToUInt16());
                 }
                 else
@@ -514,7 +516,7 @@ namespace pylorak.TinyWall
             using var conditions = new FilterConditionList();
 
             // Application identity
-            if (!Utils.IsNullOrEmpty(r.AppContainerSid))
+            if (!string.IsNullOrEmpty(r.AppContainerSid))
             {
                 System.Diagnostics.Debug.Assert(!r.AppContainerSid.Equals("*"));
 
@@ -529,7 +531,7 @@ namespace pylorak.TinyWall
             }
             else
             {
-                if (!Utils.IsNullOrEmpty(r.ServiceName))
+                if (!string.IsNullOrEmpty(r.ServiceName))
                 {
                     System.Diagnostics.Debug.Assert(!r.ServiceName.Equals("*"));
                     if (!LayerIsIcmpError(layer))
@@ -538,7 +540,7 @@ namespace pylorak.TinyWall
                         return;
                 }
 
-                if (!Utils.IsNullOrEmpty(r.Application))
+                if (!string.IsNullOrEmpty(r.Application))
                 {
                     System.Diagnostics.Debug.Assert(!r.Application.Equals("*"));
 
@@ -550,7 +552,7 @@ namespace pylorak.TinyWall
             }
 
             // IP address
-            if (!Utils.IsNullOrEmpty(r.RemoteAddresses))
+            if (!string.IsNullOrEmpty(r.RemoteAddresses))
             {
                 System.Diagnostics.Debug.Assert(!r.RemoteAddresses.Equals("*"));
 
@@ -604,7 +606,7 @@ namespace pylorak.TinyWall
             }
 
             // Ports
-            if (!Utils.IsNullOrEmpty(r.LocalPorts))
+            if (!string.IsNullOrEmpty(r.LocalPorts))
             {
                 System.Diagnostics.Debug.Assert(!r.LocalPorts.Equals("*"));
                 foreach (var p in r.LocalPorts.AsSpan().Split(',', SpanSplitOptions.RemoveEmptyEntries))
@@ -613,7 +615,7 @@ namespace pylorak.TinyWall
                     conditions.Add(new PortFilterCondition(minPort, maxPort, RemoteOrLocal.Local));
                 }
             }
-            if (!Utils.IsNullOrEmpty(r.RemotePorts))
+            if (!string.IsNullOrEmpty(r.RemotePorts))
             {
                 System.Diagnostics.Debug.Assert(!r.RemotePorts.Equals("*"));
                 foreach (var p in r.RemotePorts.AsSpan().Split(',', SpanSplitOptions.RemoveEmptyEntries))
@@ -624,13 +626,17 @@ namespace pylorak.TinyWall
             }
 
             // ICMP
-            if (!Utils.IsNullOrEmpty(r.IcmpTypesAndCodes))
+            if (!string.IsNullOrEmpty(r.IcmpTypesAndCodes))
             {
                 System.Diagnostics.Debug.Assert(!r.IcmpTypesAndCodes.Equals("*"));
-                foreach (var e in r.IcmpTypesAndCodes.AsSpan().Split(',', SpanSplitOptions.RemoveEmptyEntries))
+                ReadOnlySpan<char> icmpSpan = r.IcmpTypesAndCodes.AsSpan();
+                foreach (Range eRange in icmpSpan.Split(','))
                 {
-                    using var tc = e.Split(':');
-                    tc.MoveNext(); var icmpType = tc.Current;
+                    ReadOnlySpan<char> entry = icmpSpan[eRange];
+                    if (entry.IsEmpty) continue;
+
+                    var tc = entry.Split(':');
+                    tc.MoveNext(); ReadOnlySpan<char> icmpType = entry[tc.Current];
 
                     if (LayerIsIcmpError(layer))
                     {
@@ -641,7 +647,7 @@ namespace pylorak.TinyWall
                         // ICMP Code
                         if (tc.MoveNext())
                         {
-                            var icmpCode = tc.Current;
+                            ReadOnlySpan<char> icmpCode = entry[tc.Current];
                             if ((icmpCode.Length != 0) && !icmpCode.Equals("*", StringComparison.Ordinal) && icmpCode.TryDecimalToUInt16(out ushort icmpCodeVal))
                                 conditions.Add(new IcmpErrorCodeFilterCondition(icmpCodeVal));
                         }
@@ -746,9 +752,9 @@ namespace pylorak.TinyWall
                 try
                 {
                     using var conditions = new FilterConditionList();
-                    if (!Utils.IsNullOrEmpty(subj.Application))
+                    if (!string.IsNullOrEmpty(subj.Application))
                         conditions.Add(new AppIdFilterCondition(subj.Application, false, true));
-                    if (!Utils.IsNullOrEmpty(subj.ServiceName))
+                    if (!string.IsNullOrEmpty(subj.ServiceName))
                         conditions.Add(new ServiceNameFilterCondition(subj.ServiceName));
                     if (conditions.Count == 0)
                         return;
@@ -1051,7 +1057,8 @@ namespace pylorak.TinyWall
             VisibleState.Mode = ActiveConfig.Service.StartupMode;
             GlobalInstances.ServerChangeset = Guid.NewGuid();
 
-            if (CommitLearnedRules() || PruneExpiredRules())
+            RecompileRegexPatterns();
+            if (CommitLearnedRules() | CommitRegexAutoUnblockRules() | PruneExpiredRules())
                 ActiveConfig.Service.Save(ConfigSavePath);
 
             ReapplySettings();
@@ -1251,7 +1258,7 @@ namespace pylorak.TinyWall
         }
 #endif
 
-        internal void TimerCallback(Object state)
+        internal void TimerCallback(Object? state)
         {
             Q.Add(new TwRequest(TwMessageSimple.CreateRequest(MessageType.MINUTE_TIMER)));
         }
@@ -1277,6 +1284,104 @@ namespace pylorak.TinyWall
                     GlobalInstances.ServerChangeset = Guid.NewGuid();
                     ActiveConfig.Service.ActiveProfile.AddExceptions(LearningNewExceptions);
                     LearningNewExceptions.Clear();
+                    config_changed = true;
+                }
+            }
+
+            return config_changed;
+        }
+
+        private void RecompileRegexPatterns()
+        {
+            var patterns = new List<Regex>();
+            foreach (var entry in ActiveConfig.Service.RegexAutoUnblock)
+            {
+                if (string.IsNullOrEmpty(entry.RegexPattern))
+                    continue;
+
+                try
+                {
+                    var regex = new Regex(entry.RegexPattern,
+                        RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                        TimeSpan.FromMilliseconds(100));
+                    patterns.Add(regex);
+                }
+                catch (ArgumentException)
+                {
+                    Utils.Log($"Invalid regex auto-unblock pattern: {entry.RegexPattern}", Utils.LOG_ID_SERVICE);
+                }
+            }
+            CompiledRegexPatterns = patterns;
+        }
+
+        private void CheckRegexAutoUnblock(FirewallLogEntry entry)
+        {
+            var patterns = CompiledRegexPatterns;
+            if (patterns == null || patterns.Count == 0)
+                return;
+
+            string? appPath = entry.AppPath;
+            if (string.IsNullOrEmpty(appPath)
+                || string.Equals(appPath, "System", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(appPath, "svchost.exe", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            foreach (var regex in patterns)
+            {
+                try
+                {
+                    if (!regex.IsMatch(appPath!))
+                        continue;
+                }
+                catch (RegexMatchTimeoutException)
+                {
+                    continue;
+                }
+
+                var newSubject = new ExecutableSubject(appPath!);
+
+                // Check if already in active config
+                foreach (var existing in ActiveConfig.Service.ActiveProfile.AppExceptions)
+                {
+                    if (existing.Subject.Equals(newSubject))
+                        return;
+                }
+
+                lock (RegexAutoUnblockNewExceptions)
+                {
+                    // Check if already pending
+                    for (int j = 0; j < RegexAutoUnblockNewExceptions.Count; ++j)
+                    {
+                        if (RegexAutoUnblockNewExceptions[j].Subject.Equals(newSubject))
+                            return;
+                    }
+
+                    RegexAutoUnblockNewExceptions.Add(
+                        new FirewallExceptionV3(newSubject, new UnrestrictedPolicy()));
+                }
+                break;
+            }
+        }
+
+        private bool CommitRegexAutoUnblockRules()
+        {
+            bool config_changed = false;
+
+            lock (RegexAutoUnblockNewExceptions)
+            {
+                if (RegexAutoUnblockNewExceptions.Count > 0)
+                {
+                    GlobalInstances.ServerChangeset = Guid.NewGuid();
+
+                    // Record unblocked apps for client notification
+                    foreach (var ex in RegexAutoUnblockNewExceptions)
+                    {
+                        if (ex.Subject is ExecutableSubject exeSub)
+                            VisibleState.RegexAutoUnblockedApps.Add(exeSub.ExecutablePath);
+                    }
+
+                    ActiveConfig.Service.ActiveProfile.AddExceptions(RegexAutoUnblockNewExceptions);
+                    RegexAutoUnblockNewExceptions.Clear();
                     config_changed = true;
                 }
             }
@@ -1361,7 +1466,7 @@ namespace pylorak.TinyWall
                             return TwMessageError.Instance;
                         }
 
-                        bool save_needed = CommitLearnedRules();
+                        bool save_needed = CommitLearnedRules() | CommitRegexAutoUnblockRules();
                         VisibleState.Mode = newMode;
                         if ((ActiveConfig.Service.StartupMode != VisibleState.Mode) &&
                             (VisibleState.Mode != FirewallMode.Disabled) &&
@@ -1387,6 +1492,7 @@ namespace pylorak.TinyWall
                             {
                                 GlobalInstances.ServerChangeset = Guid.NewGuid();
                                 ActiveConfig.Service = args.Config;
+                                RecompileRegexPatterns();
                                 ActiveConfig.Service.Save(ConfigSavePath);
                                 ReapplySettings();
                                 InstallFirewallRules();
@@ -1428,6 +1534,7 @@ namespace pylorak.TinyWall
 
                             var ret = args.CreateResponse(GlobalInstances.ServerChangeset, ActiveConfig.Service, VisibleState);
                             VisibleState.ClientNotifs.Clear();  // TODO: VisibleState is a reference so it cleants notifs before client could receive them
+                            VisibleState.RegexAutoUnblockedApps.Clear();
                             return ret;
                         }
                         else
@@ -1510,6 +1617,12 @@ namespace pylorak.TinyWall
                         }
 
                         if (PruneExpiredRules())
+                        {
+                            save_needed = true;
+                            rule_reload_needed = true;
+                        }
+
+                        if (CommitRegexAutoUnblockRules())
                         {
                             save_needed = true;
                             rule_reload_needed = true;
@@ -1698,15 +1811,15 @@ namespace pylorak.TinyWall
             WfpEngine.EventMatchAnyKeywords = InboundEventMatchKeyword.FWPM_NET_EVENT_KEYWORD_INBOUND_BCAST | InboundEventMatchKeyword.FWPM_NET_EVENT_KEYWORD_INBOUND_MCAST;
 
             ProcessStartWatcher.EventArrived += ProcessStartWatcher_EventArrived;
-            NetworkInterfaceWatcher.InterfaceChanged += (object sender, EventArgs args) =>
+            NetworkInterfaceWatcher.InterfaceChanged += (object? sender, EventArgs args) =>
             {
                 Q.Add(new TwRequest(TwMessageSimple.CreateRequest(MessageType.REENUMERATE_ADDRESSES)));
             };
-            RuleReloadEventMerger.Event += (object sender, EventArgs args) =>
+            RuleReloadEventMerger.Event += (object? sender, EventArgs args) =>
             {
                 Q.Add(new TwRequest(TwMessageSimple.CreateRequest(MessageType.RELOAD_WFP_FILTERS)));
             };
-            MountPointsWatcher.RegistryChanged += (object sender, EventArgs args) =>
+            MountPointsWatcher.RegistryChanged += (object? sender, EventArgs args) =>
             {
                 RuleReloadEventMerger.Pulse();
             };
@@ -1789,7 +1902,7 @@ namespace pylorak.TinyWall
                                 break;
                         }
 
-                        if (ChildInheritance.TryGetValue(parentPath, out List<FirewallExceptionV3> exList))
+                        if (ChildInheritance.TryGetValue(parentPath, out List<FirewallExceptionV3>? exList))
                         {
                             newExceptions ??= new List<FirewallExceptionV3>();
 
@@ -1830,7 +1943,7 @@ namespace pylorak.TinyWall
             entry.Timestamp = data.timeStamp;
             entry.Event = eventType;
 
-            if (!Utils.IsNullOrEmpty(data.appId))
+            if (!string.IsNullOrEmpty(data.appId))
                 entry.AppPath = PathMapper.Instance.ConvertPathIgnoreErrors(data.appId, PathFormat.Win32);
             else
                 entry.AppPath = "System";
@@ -1856,6 +1969,11 @@ namespace pylorak.TinyWall
             {
                 FirewallLogEntries.Enqueue(entry);
             }
+
+            if (eventType == EventLogEvent.BLOCKED)
+            {
+                CheckRegexAutoUnblock(entry);
+            }
         }
 
         private void AutoLearnLogEntry(FirewallLogEntry entry)
@@ -1873,7 +1991,7 @@ namespace pylorak.TinyWall
             }
 
             // Certain things we don't want to whitelist
-            if (Utils.IsNullOrEmpty(entry.AppPath)
+            if (string.IsNullOrEmpty(entry.AppPath)
                 || string.Equals(entry.AppPath, "System", StringComparison.InvariantCultureIgnoreCase)
                 || string.Equals(entry.AppPath, "svchost.exe", StringComparison.InvariantCultureIgnoreCase)
                 )
@@ -1951,7 +2069,7 @@ namespace pylorak.TinyWall
                 wh.WaitOne();
             }
 
-            if (CommitLearnedRules())
+            if (CommitLearnedRules() | CommitRegexAutoUnblockRules())
                 ActiveConfig.Service.Save(ConfigSavePath);
 
             RuleReloadEventMerger.Dispose();

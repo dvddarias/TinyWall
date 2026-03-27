@@ -36,7 +36,7 @@ namespace pylorak.TinyWall
         {
             for (int i = 0; i < listView.SelectedItems.Count; ++i)
             {
-                this.SelectedPackages.Add((UwpPackageList.Package)listView.SelectedItems[i].Tag);
+                this.SelectedPackages.Add((UwpPackageList.Package)listView.SelectedItems[i].Tag!);
             }
             this.DialogResult = System.Windows.Forms.DialogResult.OK;
         }
@@ -68,7 +68,7 @@ namespace pylorak.TinyWall
 
             foreach (ColumnHeader col in listView.Columns)
             {
-                if (ActiveConfig.Controller.UwpPackagesFormColumnWidths.TryGetValue((string)col.Tag, out int width))
+                if (ActiveConfig.Controller.UwpPackagesFormColumnWidths.TryGetValue((string)col.Tag!, out int width))
                     col.Width = width;
             }
 
@@ -93,7 +93,7 @@ namespace pylorak.TinyWall
 
         private void listView_ColumnClick(object sender, ColumnClickEventArgs e)
         {
-            var oldSorter = (ListViewItemComparer)listView.ListViewItemSorter;
+            var oldSorter = (ListViewItemComparer?)listView.ListViewItemSorter;
             var newSorter = new ListViewItemComparer(e.Column);
             if ((oldSorter != null) && (oldSorter.Column == newSorter.Column))
                 newSorter.Ascending = !oldSorter.Ascending;
@@ -117,7 +117,7 @@ namespace pylorak.TinyWall
 
             ActiveConfig.Controller.UwpPackagesFormColumnWidths.Clear();
             foreach (ColumnHeader col in listView.Columns)
-                ActiveConfig.Controller.UwpPackagesFormColumnWidths.Add((string)col.Tag, col.Width);
+                ActiveConfig.Controller.UwpPackagesFormColumnWidths.Add((string)col.Tag!, col.Width);
 
             ActiveConfig.Controller.Save();
         }

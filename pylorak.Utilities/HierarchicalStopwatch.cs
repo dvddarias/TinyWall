@@ -133,7 +133,7 @@ namespace pylorak.Utilities
                     var logfile = $"{LogFileBase} {threadName}.log";
 
                     if (!Directory.Exists(logdir))
-                        Directory.CreateDirectory(logdir);
+                        Directory.CreateDirectory(logdir!);
 
                     // Only log if log file has not yet reached a certain size
                     if (File.Exists(logfile))

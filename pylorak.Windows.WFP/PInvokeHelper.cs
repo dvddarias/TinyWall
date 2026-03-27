@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Runtime.ConstrainedExecution;
 using System.Security.Principal;
 
 namespace pylorak.Windows.WFP

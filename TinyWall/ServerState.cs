@@ -40,5 +40,6 @@ namespace pylorak.TinyWall
         public UpdateDescriptor? Update = null;
         public FirewallMode Mode = FirewallMode.Unknown;
         public List<MessageType> ClientNotifs = new();
+        public List<string> RegexAutoUnblockedApps = new();
     }
 }

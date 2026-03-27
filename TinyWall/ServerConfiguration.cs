@@ -158,6 +158,9 @@ namespace pylorak.TinyWall
         public FirewallMode StartupMode { get; set; } = FirewallMode.Normal;
 
         [DataMember(EmitDefaultValue = false)]
+        public List<RegexAutoUnblockEntry> RegexAutoUnblock { get; set; } = new List<RegexAutoUnblockEntry>();
+
+        [DataMember(EmitDefaultValue = false)]
         public List<ServerProfileConfiguration> Profiles { get; set; } = new List<ServerProfileConfiguration>();
 
         private string _ActiveProfileName = string.Empty;
@@ -240,7 +243,7 @@ namespace pylorak.TinyWall
             get
             {
 #if DEBUG
-                return Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
+                return Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly()!.Location)!;
 #else
                 string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "TinyWall");
                 if (!Directory.Exists(dir))

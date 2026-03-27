@@ -3,7 +3,6 @@ using System.Collections.Specialized;
 using System.Security;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Runtime.ConstrainedExecution;
 using System.Threading;
 using Microsoft.Win32.SafeHandles;
 
@@ -30,8 +29,7 @@ namespace Microsoft.Samples
         }
 
         [DllImport("kernel32", SetLastError = true),
-         SuppressUnmanagedCodeSecurity,
-         ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+         SuppressUnmanagedCodeSecurity]
         private static extern bool CloseHandle(IntPtr handle);
 
         override protected bool ReleaseHandle()
@@ -122,11 +120,9 @@ namespace Microsoft.Samples
             internal const int ERROR_CANT_OPEN_ANONYMOUS = 0x543;
 
             [DllImport("kernel32", SetLastError = true)]
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
             internal static extern bool CloseHandle(IntPtr handle);
 
             [DllImport("advapi32", CharSet = CharSet.Unicode, SetLastError = true)]
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
             internal static extern bool AdjustTokenPrivileges(
                 [In]     SafeTokenHandle TokenHandle,
                 [In]     bool DisableAllPrivileges,
@@ -136,33 +132,27 @@ namespace Microsoft.Samples
                 [In, Out] ref uint ReturnLength);
 
             [DllImport("advapi32", CharSet = CharSet.Auto, SetLastError = true)]
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
             internal static extern bool RevertToSelf();
 
             [DllImport("advapi32", EntryPoint = "LookupPrivilegeValueW", CharSet = CharSet.Unicode, SetLastError = true)]
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
             internal static extern bool LookupPrivilegeValue(
                 [In]     string? lpSystemName,
                 [In]     string lpName,
                 [In, Out] ref LUID Luid);
 
             [DllImport("kernel32", CharSet = CharSet.Auto, SetLastError = true)]
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
             internal static extern IntPtr GetCurrentProcess();
 
             [DllImport("kernel32", CharSet = CharSet.Auto, SetLastError = true)]
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
             internal static extern IntPtr GetCurrentThread();
 
             [DllImport("advapi32", CharSet = CharSet.Unicode, SetLastError = true)]
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
             internal static extern bool OpenProcessToken(
                 [In]     IntPtr ProcessToken,
                 [In]     TokenAccessLevels DesiredAccess,
                 [In, Out] ref SafeTokenHandle TokenHandle);
 
             [DllImport("advapi32", CharSet = CharSet.Unicode, SetLastError = true)]
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
             internal static extern bool OpenThreadToken(
                 [In]     IntPtr ThreadToken,
                 [In]     TokenAccessLevels DesiredAccess,
@@ -170,7 +160,6 @@ namespace Microsoft.Samples
                 [In, Out] ref SafeTokenHandle TokenHandle);
 
             [DllImport("advapi32", CharSet = CharSet.Unicode, SetLastError = true)]
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
             internal static extern bool DuplicateTokenEx(
                 [In]    SafeTokenHandle ExistingToken,
                 [In]    TokenAccessLevels DesiredAccess,
@@ -180,7 +169,6 @@ namespace Microsoft.Samples
                 [In, Out] ref SafeTokenHandle NewToken);
 
             [DllImport("advapi32", CharSet = CharSet.Unicode, SetLastError = true)]
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
             internal static extern bool SetThreadToken(
                 [In]    IntPtr Thread,
                 [In]    SafeTokenHandle Token);
@@ -244,7 +232,6 @@ namespace Microsoft.Samples
         // of privilege names to luids
         //
 
-        [ReliabilityContract( Consistency.WillNotCorruptState, Cer.MayFail )]
         private static NativeMethods.LUID LuidFromPrivilege( string privilege )
         {
             NativeMethods.LUID luid;
@@ -255,15 +242,13 @@ namespace Microsoft.Samples
             // Look up the privilege LUID inside the cache
             //
 
-            RuntimeHelpers.PrepareConstrainedRegions();
-
             try
             {
                 privilegeLock.AcquireReaderLock(Timeout.Infinite);
 
                 if ( luids.Contains( privilege ))
                 {
-                    luid = (NativeMethods.LUID)luids[privilege];
+                    luid = (NativeMethods.LUID)luids[privilege]!;
 
                     privilegeLock.ReleaseReaderLock();
                 }
@@ -356,8 +341,6 @@ namespace Microsoft.Samples
                         }
                     }
                 }
-
-                RuntimeHelpers.PrepareConstrainedRegions();
 
                 try
                 {
@@ -536,19 +519,16 @@ namespace Microsoft.Samples
         #endregion
 
         #region Public methods and properties
-        [ReliabilityContract( Consistency.WillNotCorruptState, Cer.MayFail )]
         public void Enable()
         {
             this.ToggleState( true );
         }
         
-        [ReliabilityContract( Consistency.WillNotCorruptState, Cer.MayFail )]
         public void Disable()
         {
             this.ToggleState( false );
         }
 
-        [ReliabilityContract( Consistency.WillNotCorruptState, Cer.MayFail )]
         public void Revert()
         {
             int error = 0;
@@ -570,8 +550,6 @@ namespace Microsoft.Samples
             //
             // This code must be eagerly prepared and non-interruptible.
             //
-
-            RuntimeHelpers.PrepareConstrainedRegions();
 
             try
             {
@@ -654,9 +632,7 @@ namespace Microsoft.Samples
             
             var p = new Privilege( privilege );
 
-            RuntimeHelpers.PrepareConstrainedRegions();
-
-            try 
+            try
             {
                 if (enabled)
                 {
@@ -682,7 +658,6 @@ namespace Microsoft.Samples
         #endregion
 
         #region Private implementation
-        [ReliabilityContract( Consistency.WillNotCorruptState, Cer.MayFail )]
         private void ToggleState( bool enable )
         {
             int error = 0;
@@ -710,8 +685,6 @@ namespace Microsoft.Samples
             // consistency of thread oken state even in the face of catastrophic exceptions
             //
 
-            RuntimeHelpers.PrepareConstrainedRegions();
-
             try
             {
                 //
@@ -720,7 +693,7 @@ namespace Microsoft.Samples
                 // interrupted by catastrophic exceptions
                 //
             }
-            finally 
+            finally
             {
                 try
                 {
@@ -815,11 +788,8 @@ namespace Microsoft.Samples
             }
         }
 
-        [ReliabilityContract( Consistency.WillNotCorruptState, Cer.Success )]
         private void Reset()
         {
-            RuntimeHelpers.PrepareConstrainedRegions();
-
             try
             {
                 // Payload is in the finally block

@@ -21,7 +21,7 @@ namespace pylorak.TinyWall.DatabaseClasses
             {
                 try
                 {
-                    string ret = Resources.Exceptions.ResourceManager.GetString(Name);
+                    string ret = Resources.Exceptions.ResourceManager.GetString(Name)!;
                     return string.IsNullOrEmpty(ret) ? Name : ret;
                 }
                 catch

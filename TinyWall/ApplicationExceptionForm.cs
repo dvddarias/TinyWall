@@ -28,7 +28,7 @@ namespace pylorak.TinyWall
             {
                 Type type = transparentLabel1.GetType();
                 BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
-                MethodInfo method = type.GetMethod("SetStyle", flags);
+                MethodInfo? method = type.GetMethod("SetStyle", flags);
 
                 if (method != null)
                 {
@@ -109,7 +109,7 @@ namespace pylorak.TinyWall
             // Display timer
             for (int i = 0; i < cmbTimer.Items.Count; ++i)
             {
-                if (((KeyValuePair<string, AppExceptionTimer>)cmbTimer.Items[i]).Value == TmpExceptionSettings[0].Timer)
+                if (((KeyValuePair<string, AppExceptionTimer>)cmbTimer.Items[i]!).Value == TmpExceptionSettings[0].Timer)
                 {
                     cmbTimer.SelectedIndex = i;
                     break;
@@ -418,7 +418,7 @@ namespace pylorak.TinyWall
 
         private void cmbTimer_SelectedIndexChanged(object sender, EventArgs e)
         {
-            TmpExceptionSettings[0].Timer = ((KeyValuePair<string, AppExceptionTimer>)cmbTimer.SelectedItem).Value;
+            TmpExceptionSettings[0].Timer = ((KeyValuePair<string, AppExceptionTimer>)cmbTimer.SelectedItem!).Value;
         }
 
         private void radRestriction_CheckedChanged(object sender, EventArgs e)

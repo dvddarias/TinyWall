@@ -86,7 +86,17 @@ namespace pylorak.TinyWall.Resources {
                 return ResourceManager.GetString("AreYouSureYouWantToRemoveAllExceptions", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Auto-unblocked by regex pattern:
+        ///{0}.
+        /// </summary>
+        internal static string AutoUnblockedNotification {
+            get {
+                return ResourceManager.GetString("AutoUnblockedNotification", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Cannot get executable path. Whitelisting failed..
         /// </summary>

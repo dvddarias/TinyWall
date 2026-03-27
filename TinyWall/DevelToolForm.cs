@@ -220,7 +220,7 @@ namespace pylorak.TinyWall
 
             update.Modules[0] = new UpdateModule();
             update.Modules[0].Component = "TinyWall";
-            update.Modules[0].ComponentVersion = installerInfo.ProductVersion.ToString().Trim();
+            update.Modules[0].ComponentVersion = installerInfo.ProductVersion!.ToString().Trim();
             update.Modules[0].DownloadHash = Hasher.HashFile(msiPath);
             update.Modules[0].UpdateURL = txtUpdateURL.Text + MSI_FILENAME;
 
@@ -277,7 +277,7 @@ namespace pylorak.TinyWall
                 if (CountOccurence(Path.GetFileName(primary), '.') != 1)
                     continue;   // This is not a primary at all...
 
-                string dir = Path.GetDirectoryName(primary);
+                string dir = Path.GetDirectoryName(primary)!;
                 string primaryBase = Path.GetFileNameWithoutExtension(primary);
                 string[] satellites = Directory.GetFiles(dir, primaryBase + ".*.resx", SearchOption.TopDirectoryOnly);
                 ResXInputs.Add(new KeyValuePair<string, string[]>(primary, satellites));
@@ -316,7 +316,7 @@ namespace pylorak.TinyWall
             IDictionaryEnumerator dict = resxReader.GetEnumerator();
             while (dict.MoveNext())
             {
-                ResXDataNode node = (ResXDataNode)dict.Value;
+                ResXDataNode node = (ResXDataNode)dict.Value!;
                 resxContents.Add(node.Name, node);
             }
             return resxContents;
@@ -358,7 +358,7 @@ namespace pylorak.TinyWall
                         ResXDataNode satelliteItem = satellite[primaryItem.Name];
 
                         // Only save localized resource if it is different from the default 
-                        if (!satelliteItem.GetValue(trs).Equals(primaryItem.GetValue(trs)))
+                        if (!satelliteItem.GetValue(trs)!.Equals(primaryItem.GetValue(trs)))
                             newSatellite.Add(satelliteItem.Name, satelliteItem);
                         else
                         {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Security.Permissions;
 using System.ServiceProcess;
 using System.Runtime.InteropServices;
 
@@ -28,17 +27,57 @@ namespace pylorak.Windows.Services
             return service;
         }
 
-        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-        public ServiceControlManager()
+        public ServiceControlManager(ServiceControlAccessRights rights = ServiceControlAccessRights.SC_MANAGER_CONNECT)
         {
             // Open the service control manager
             SCManager = NativeMethods.OpenSCManager(
                 null,
                 null,
-                ServiceControlAccessRights.SC_MANAGER_CONNECT);
+                rights);
 
             // Verify if the SC is opened
             if (SCManager.IsInvalid)
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+        }
+
+        public void InstallService(string serviceName, string displayName, string binaryPath,
+            string[] dependencies, uint startType, string? loadOrderGroup)
+        {
+            // Build double-null-terminated dependency char array
+            char[]? depChars = null;
+            if (dependencies.Length > 0)
+            {
+                string depString = string.Join("\0", dependencies) + "\0";
+                depChars = depString.ToCharArray();
+            }
+
+            using var service = NativeMethods.CreateService(
+                SCManager,
+                serviceName,
+                displayName,
+                ServiceAccessRights.SERVICE_ALL_ACCESS,
+                0x10,  // SERVICE_WIN32_OWN_PROCESS
+                startType,
+                0x01,  // SERVICE_ERROR_NORMAL
+                binaryPath,
+                loadOrderGroup,
+                IntPtr.Zero,
+                depChars,
+                null,   // LocalSystem account
+                null);  // no password
+
+            if (service.IsInvalid)
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+        }
+
+        public void UninstallService(string serviceName)
+        {
+            using var service = OpenService(serviceName,
+                ServiceAccessRights.SERVICE_STOP |
+                ServiceAccessRights.SERVICE_QUERY_STATUS |
+                (ServiceAccessRights)0x10000 /* DELETE */);
+
+            if (!NativeMethods.DeleteService(service))
                 throw new Win32Exception(Marshal.GetLastWin32Error());
         }
 
@@ -47,7 +86,6 @@ namespace pylorak.Windows.Services
         /// Dertermines whether the nominated service is set to restart on failure.
         /// </summary>
         /// <exception cref="ComponentModel.Win32Exception">"Unable to query the Service configuration."</exception>
-        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
         internal bool HasRestartOnFailure(string serviceName)
         {
             const int bufferSize = 1024 * 8;
@@ -107,7 +145,6 @@ namespace pylorak.Windows.Services
         /// <summary>
         /// Sets the nominated service to restart on failure.
         /// </summary>
-        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
         public void SetRestartOnFailure(string serviceName, bool restartOnFailure)
         {
             const uint delay = 1000;
@@ -167,7 +204,6 @@ namespace pylorak.Windows.Services
                 throw new Win32Exception();
         }
 
-        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
         public void SetStartupMode(string serviceName, ServiceStartMode mode)
         {
             using var service = OpenService(
@@ -192,7 +228,6 @@ namespace pylorak.Windows.Services
                 throw new Win32Exception(Marshal.GetLastWin32Error());
         }
 
-        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
         public void SetLoadOrderGroup(string serviceName, string group)
         {
             using var service = OpenService(
@@ -217,7 +252,6 @@ namespace pylorak.Windows.Services
                 throw new Win32Exception(Marshal.GetLastWin32Error());
         }
 
-        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
         public uint GetStartupMode(string serviceName)
         {
             using var service = OpenService(serviceName, ServiceAccessRights.SERVICE_QUERY_CONFIG);
@@ -233,7 +267,6 @@ namespace pylorak.Windows.Services
             return query_srv_config.dwStartType;
         }
 
-        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
         public uint? GetServicePid(string serviceName)
         {
             using var service = OpenService(serviceName, ServiceAccessRights.SERVICE_QUERY_STATUS);
@@ -245,7 +278,7 @@ namespace pylorak.Windows.Services
             if (result == false)
                 throw new Win32Exception(Marshal.GetLastWin32Error());
 
-            SERVICE_STATUS_PROCESS query_srv_status = Marshal.PtrToStructure<SERVICE_STATUS_PROCESS>(buff.DangerousGetHandle());
+            SERVICE_STATUS_PROCESS query_srv_status = Marshal.PtrToStructure<SERVICE_STATUS_PROCESS>(buff.DangerousGetHandle())!;
 
             return query_srv_status.dwCurrentState switch
             {

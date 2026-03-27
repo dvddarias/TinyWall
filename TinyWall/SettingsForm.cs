@@ -75,11 +75,11 @@ namespace pylorak.TinyWall
             TmpConfig.Service.ActiveProfile.Normalize();
         }
 
-        private void ListApplications_DragDrop(object sender, DragEventArgs e)
+        private void ListApplications_DragDrop(object? sender, DragEventArgs e)
         {
             var list = new List<FirewallExceptionV3>();
 
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop, false);
+            string[] files = (string[])e.Data!.GetData(DataFormats.FileDrop, false)!;
             foreach (string file in files)
             {
                 try
@@ -93,9 +93,9 @@ namespace pylorak.TinyWall
             RebuildExceptionsList();
         }
 
-        private void ListApplications_DragEnter(object sender, DragEventArgs e)
+        private void ListApplications_DragEnter(object? sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data!.GetDataPresent(DataFormats.FileDrop))
                 e.Effect = DragDropEffects.All;
             else
                 e.Effect = DragDropEffects.None;
@@ -118,7 +118,7 @@ namespace pylorak.TinyWall
                 comboLanguages.SelectedIndex = 0;
                 for(int i = 0; i < comboLanguages.Items.Count; ++i)
                 {
-                    IdWithName item = (IdWithName)comboLanguages.Items[i];
+                    IdWithName item = (IdWithName)comboLanguages.Items[i]!;
                     if (item.Id.Equals(TmpConfig.Controller.Language, StringComparison.OrdinalIgnoreCase))
                     {
                         comboLanguages.SelectedIndex = i;
@@ -160,6 +160,9 @@ namespace pylorak.TinyWall
 
                 // Fill list of applications
                 RebuildExceptionsList();
+
+                // Fill regex auto-unblock list
+                RebuildRegexList();
             }
             finally
             {
@@ -328,7 +331,7 @@ namespace pylorak.TinyWall
             TmpConfig.Service.Blocklists.EnableBlocklists = chkEnableBlocklists.Checked;
             TmpConfig.Service.ActiveProfile.DisplayOffBlock = chkDisplayOffBlock.Checked;
 
-            TmpConfig.Controller.Language = ((IdWithName)comboLanguages.SelectedItem).Id;
+            TmpConfig.Controller.Language = ((IdWithName)comboLanguages.SelectedItem!).Id;
 
             this.DialogResult = DialogResult.OK;
         }
@@ -365,7 +368,7 @@ namespace pylorak.TinyWall
             for (int i = listApplications.SelectedIndices.Count - 1; i >= 0; --i)
             {
                 ListViewItem li = FilteredExceptionItems[listApplications.SelectedIndices[i]];
-                TmpConfig.Service.ActiveProfile.AppExceptions.Remove((FirewallExceptionV3)li.Tag);
+                TmpConfig.Service.ActiveProfile.AppExceptions.Remove((FirewallExceptionV3)li.Tag!);
             }
 
             listApplications.SelectedIndices.Clear();
@@ -384,15 +387,15 @@ namespace pylorak.TinyWall
         private void btnAppModify_Click(object sender, EventArgs e)
         {
             ListViewItem li = FilteredExceptionItems[listApplications.SelectedIndices[0]];
-            FirewallExceptionV3 oldEx = (FirewallExceptionV3)li.Tag;
-            FirewallExceptionV3 newEx = Utils.DeepClone(oldEx);
+            FirewallExceptionV3 oldEx = (FirewallExceptionV3)li.Tag!;
+            FirewallExceptionV3 newEx = Utils.DeepClone(oldEx)!;
             newEx.RegenerateId();
             using (var f = new ApplicationExceptionForm(newEx, true))
             {
                 if (f.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
                 {
                     // Remove old rule
-                    TmpConfig.Service.ActiveProfile.AppExceptions.Remove(oldEx);
+                    TmpConfig.Service.ActiveProfile.AppExceptions.Remove(oldEx!);
                     // Add new rule
                     TmpConfig.Service.ActiveProfile.AddExceptions(f.ExceptionSettings);
                     RebuildExceptionsList();
@@ -443,6 +446,55 @@ namespace pylorak.TinyWall
             btnAppModify_Click(this, EventArgs.Empty);
         }
 
+        private void RebuildRegexList()
+        {
+            listRegexPatterns.Items.Clear();
+            foreach (var entry in TmpConfig.Service.RegexAutoUnblock)
+            {
+                var item = new ListViewItem(entry.RegexPattern);
+                item.SubItems.Add(entry.Description);
+                item.Tag = entry;
+                listRegexPatterns.Items.Add(item);
+            }
+        }
+
+        private void btnRegexAdd_Click(object sender, EventArgs e)
+        {
+            using var f = new RegexAutoUnblockForm();
+            if (f.ShowDialog(this) == DialogResult.OK)
+            {
+                TmpConfig.Service.RegexAutoUnblock.Add(f.Entry);
+                RebuildRegexList();
+            }
+        }
+
+        private void btnRegexEdit_Click(object sender, EventArgs e)
+        {
+            if (listRegexPatterns.SelectedItems.Count == 0)
+                return;
+
+            var selected = listRegexPatterns.SelectedItems[0];
+            var existing = (RegexAutoUnblockEntry)selected.Tag!;
+            using var f = new RegexAutoUnblockForm(existing);
+            if (f.ShowDialog(this) == DialogResult.OK)
+            {
+                int index = TmpConfig.Service.RegexAutoUnblock.IndexOf(existing!);
+                if (index >= 0)
+                    TmpConfig.Service.RegexAutoUnblock[index] = f.Entry;
+                RebuildRegexList();
+            }
+        }
+
+        private void btnRegexRemove_Click(object sender, EventArgs e)
+        {
+            for (int i = listRegexPatterns.SelectedIndices.Count - 1; i >= 0; --i)
+            {
+                var item = listRegexPatterns.Items[listRegexPatterns.SelectedIndices[i]];
+                TmpConfig.Service.RegexAutoUnblock.Remove((RegexAutoUnblockEntry)item.Tag!);
+            }
+            RebuildRegexList();
+        }
+
         private void btnUpdate_Click(object sender, EventArgs e)
         {
             Updater.StartUpdate();
@@ -467,7 +519,7 @@ namespace pylorak.TinyWall
         {
             try
             {
-                var psi = new ProcessStartInfo(Path.Combine(Path.GetDirectoryName(Utils.ExecutablePath), "License.rtf"));
+                var psi = new ProcessStartInfo(Path.Combine(Path.GetDirectoryName(Utils.ExecutablePath)!, "License.rtf"));
                 psi.UseShellExecute = true;
                 Process.Start(psi)?.Dispose();
             }
@@ -542,7 +594,7 @@ namespace pylorak.TinyWall
 
             foreach (ColumnHeader col in listApplications.Columns)
             {
-                if (ActiveConfig.Controller.SettingsFormAppListColumnWidths.TryGetValue((string)col.Tag, out int width))
+                if (ActiveConfig.Controller.SettingsFormAppListColumnWidths.TryGetValue((string)col.Tag!, out int width))
                     col.Width = width;
             }
 
@@ -591,7 +643,7 @@ namespace pylorak.TinyWall
 
         private void listApplications_ColumnClick(object sender, ColumnClickEventArgs e)
         {
-            var oldSorter = (ListViewItemComparer)listApplications.ListViewItemSorter;
+            var oldSorter = (ListViewItemComparer?)listApplications.ListViewItemSorter;
             var newSorter = new ListViewItemComparer(e.Column, IconList);
             if ((oldSorter != null) && (oldSorter.Column == newSorter.Column))
                 newSorter.Ascending = !oldSorter.Ascending;
@@ -610,7 +662,7 @@ namespace pylorak.TinyWall
         {
             try
             {
-                var psi = new ProcessStartInfo(Path.Combine(Path.GetDirectoryName(Utils.ExecutablePath), "Attributions.txt"));
+                var psi = new ProcessStartInfo(Path.Combine(Path.GetDirectoryName(Utils.ExecutablePath)!, "Attributions.txt"));
                 psi.UseShellExecute = true;
                 Process.Start(psi)?.Dispose();
             }
@@ -637,8 +689,8 @@ namespace pylorak.TinyWall
             ActiveConfig.Controller.SettingsFormAppListColumnWidths.Clear();
             foreach (ColumnHeader col in listApplications.Columns)
             {
-                TmpConfig.Controller.SettingsFormAppListColumnWidths.Add((string)col.Tag, col.Width);
-                ActiveConfig.Controller.SettingsFormAppListColumnWidths.Add((string)col.Tag, col.Width);
+                TmpConfig.Controller.SettingsFormAppListColumnWidths.Add((string)col.Tag!, col.Width);
+                ActiveConfig.Controller.SettingsFormAppListColumnWidths.Add((string)col.Tag!, col.Width);
             }
 
             ActiveConfig.Controller.Save();

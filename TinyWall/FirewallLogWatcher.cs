@@ -133,7 +133,7 @@ namespace pylorak.TinyWall
             return entry;
         }
 
-        void LogWatcher_EventRecordWritten(object sender, EventRecordWrittenEventArgs e)
+        void LogWatcher_EventRecordWritten(object? sender, EventRecordWrittenEventArgs e)
         {
             try
             {

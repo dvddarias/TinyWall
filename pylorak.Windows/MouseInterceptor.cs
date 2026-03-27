@@ -67,8 +67,8 @@ namespace pylorak.Windows
         public void Start()
         {
             using Process curProcess = Process.GetCurrentProcess();
-            using ProcessModule curModule = curProcess.MainModule;
-            _hookID = NativeMethods.SetWindowsHookEx(NativeMethods.WH_MOUSE_LL, _proc, NativeMethods.GetModuleHandle(curModule.ModuleName), 0);
+            using ProcessModule curModule = curProcess.MainModule!;
+            _hookID = NativeMethods.SetWindowsHookEx(NativeMethods.WH_MOUSE_LL, _proc, NativeMethods.GetModuleHandle(curModule!.ModuleName), 0);
         }
 
         public void Stop()

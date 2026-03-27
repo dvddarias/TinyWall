@@ -61,9 +61,9 @@ namespace pylorak.TinyWall
         [JsonPropertyOrder(-1)]
         public abstract SubjectType SubjectType { get; }
 
-        public abstract bool Equals(ExceptionSubject other);
+        public abstract bool Equals(ExceptionSubject? other);
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj == null)
                 return false;
@@ -118,7 +118,7 @@ namespace pylorak.TinyWall
             }
         }
 
-        public override bool Equals(ExceptionSubject other)
+        public override bool Equals(ExceptionSubject? other)
         {
             if (other is null)
                 return false;
@@ -246,7 +246,7 @@ namespace pylorak.TinyWall
             return new ExecutableSubject(ResolvePath(ExecutablePath));
         }
 
-        public override bool Equals(ExceptionSubject other)
+        public override bool Equals(ExceptionSubject? other)
         {
             if (other is null)
                 return false;
@@ -309,7 +309,7 @@ namespace pylorak.TinyWall
             return new ServiceSubject(ResolvePath(ExecutablePath), ServiceName);
         }
 
-        public override bool Equals(ExceptionSubject other)
+        public override bool Equals(ExceptionSubject? other)
         {
             if (other is null)
                 return false;
@@ -384,7 +384,7 @@ namespace pylorak.TinyWall
             this(package.Sid, package.Name, package.Publisher, package.PublisherId)
         { }
 
-        public override bool Equals(ExceptionSubject other)
+        public override bool Equals(ExceptionSubject? other)
         {
             if (other is null)
                 return false;

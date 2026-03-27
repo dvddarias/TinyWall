@@ -13,6 +13,8 @@ using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 using Microsoft.Samples;
+using TaskDialog = Microsoft.Samples.TaskDialog;
+using TaskDialogIcon = Microsoft.Samples.TaskDialogIcon;
 using pylorak.Windows;
 
 namespace pylorak.TinyWall
@@ -127,7 +129,7 @@ namespace pylorak.TinyWall
 
         private static readonly Random _rng = new ();
 
-        public static string ExecutablePath { get; } = System.Reflection.Assembly.GetEntryAssembly().Location;
+        public static string ExecutablePath { get; } = Environment.ProcessPath!;
 
         public static string HexEncode(byte[] binstr)
         {
@@ -138,13 +140,6 @@ namespace pylorak.TinyWall
             return sb.ToString();
         }
 
-#if NET48
-        // Use string.IsNullOrEmpty() on .Net 5 and newer
-        public static bool IsNullOrEmpty([NotNullWhen(false)] string? str)
-        {
-            return (str is null) || (str == string.Empty);
-        }
-#endif
 
         public static T OnlyFirst<T>(IEnumerable<T> items)
         {
@@ -221,9 +216,9 @@ namespace pylorak.TinyWall
         internal static string ProgramFilesx86()
         {
             if ((8 == IntPtr.Size) || (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable("PROCESSOR_ARCHITEW6432"))))
-                return Environment.GetEnvironmentVariable("ProgramFiles(x86)");
+                return Environment.GetEnvironmentVariable("ProgramFiles(x86)")!;
             else
-                return Environment.GetEnvironmentVariable("ProgramFiles");
+                return Environment.GetEnvironmentVariable("ProgramFiles")!;
         }
 
         internal static void CompressDeflate(string inputFile, string outputFile)
@@ -289,7 +284,7 @@ namespace pylorak.TinyWall
         /// <returns>The long path. Null or empty if the input is null or empty. Returns the input path in case of error.</returns>
         internal static string GetLongPathName(string? shortPath)
         {
-            if (Utils.IsNullOrEmpty(shortPath))
+            if (string.IsNullOrEmpty(shortPath))
                 return string.Empty;
 
             var builder = new StringBuilder(255);
@@ -425,7 +420,7 @@ namespace pylorak.TinyWall
             if (hideWindow)
                 psi.WindowStyle = ProcessWindowStyle.Hidden;
 
-            return Process.Start(psi);
+            return Process.Start(psi)!;
         }
 
         internal static bool RunningAsAdmin()
@@ -536,10 +531,10 @@ namespace pylorak.TinyWall
 
         internal static void CenterControlInParent(Control control)
         {
-            Control parent = control.Parent;
+            Control parent = control.Parent!;
 
             control.Location = new Point(
-                parent.Width / 2 - control.Width / 2,
+                parent!.Width / 2 - control.Width / 2,
                 parent.Height / 2 - control.Height / 2
                 );
         }
@@ -549,7 +544,7 @@ namespace pylorak.TinyWall
             // Place window to top-left corner of working area if window is too much off-screen
             Rectangle formVisibleArea = Rectangle.Intersect(SystemInformation.VirtualScreen, form.Bounds);
             if ((formVisibleArea.Width < 100) || (formVisibleArea.Height < 100))
-                form.Location = Screen.PrimaryScreen.WorkingArea.Location;
+                form.Location = Screen.PrimaryScreen!.WorkingArea.Location;
         }
 
         internal static void Invoke(SynchronizationContext syncCtx, SendOrPostCallback method)
@@ -601,7 +596,7 @@ namespace pylorak.TinyWall
             return _rng.Next(0, int.MaxValue);
         }
 
-        internal static Version TinyWallVersion { get; } = typeof(Utils).Assembly.GetName().Version;
+        internal static Version TinyWallVersion { get; } = typeof(Utils).Assembly.GetName().Version!;
 
         private readonly static object logLocker = new();
         internal static readonly string LOG_ID_SERVICE   = "service";
@@ -680,7 +675,7 @@ namespace pylorak.TinyWall
             try
             {
                 var doubleBufferPropertyInfo = control.GetType().GetProperty("DoubleBuffered", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                doubleBufferPropertyInfo.SetValue(control, enable, null);
+                doubleBufferPropertyInfo!.SetValue(control, enable, null);
             }
             catch { }
         }
@@ -695,7 +690,7 @@ namespace pylorak.TinyWall
             get
             {
 #if DEBUG
-                return Path.GetDirectoryName(Utils.ExecutablePath);
+                return Path.GetDirectoryName(Utils.ExecutablePath)!;
 #else
                 string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "TinyWall");
                 if (!Directory.Exists(dir))

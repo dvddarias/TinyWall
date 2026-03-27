@@ -391,4 +391,9 @@ The selected executable could be part of {0}. To ensure that this application ca
   <data name="SubjectTypeUwpApp" xml:space="preserve">
     <value>UWP Package</value>
   </data>
+  <data name="AutoUnblockedNotification" xml:space="preserve">
+    <value>Auto-unblocked by regex pattern:
+{0}</value>
+    <comment>Param0 is the list of executable paths that were auto-unblocked.</comment>
+  </data>
 </root>

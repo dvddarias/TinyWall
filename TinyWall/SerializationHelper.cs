@@ -50,6 +50,7 @@ namespace pylorak.TinyWall
     [JsonSerializable(typeof(TcpUdpPolicy))]
     [JsonSerializable(typeof(RuleListPolicy))]
     [JsonSerializable(typeof(FirewallExceptionV3))]
+    [JsonSerializable(typeof(RegexAutoUnblockEntry))]
     [JsonSerializable(typeof(ServerConfiguration))]
     [JsonSerializable(typeof(ControllerSettings))]
     [JsonSerializable(typeof(UpdateDescriptor))]
@@ -146,7 +147,9 @@ namespace pylorak.TinyWall
             {
                 // Try loading from old serialization format, and save in new format if allowed
                 var xmlPath = filepath.EndsWith(".json") ? Path.ChangeExtension(filepath, ".xml") : filepath;
+#pragma warning disable CS0618
                 var ret = LoadFromXMLFile<T>(xmlPath);
+#pragma warning restore CS0618
                 if (!readOnlySource) SerializeToFile(ret, filepath);
                 return ret;
             }
@@ -181,7 +184,9 @@ namespace pylorak.TinyWall
             {
                 // Try loading from old serialization format, and save in new format if allowed
                 var xmlPath = filepath.EndsWith(".json") ? Path.ChangeExtension(filepath, ".xml") : filepath;
+#pragma warning disable CS0618
                 var ret = LoadFromEncryptedXMLFile<T>(xmlPath, key, iv);
+#pragma warning restore CS0618
                 SerializeToEncryptedFile(ret, filepath, key, iv);
                 return ret;
             }

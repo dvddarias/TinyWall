@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.IO;
-using System.Net;
 using pylorak.Utilities;
 
 namespace pylorak.TinyWall
@@ -87,12 +86,6 @@ namespace pylorak.TinyWall
             }
             catch { }
 
-            // Setup TLS 1.2 & 1.3 support, if supported
-            if (ServicePointManager.SecurityProtocol != 0)
-            {
-                try { ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12; } catch { }
-                try { ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls13; } catch { }
-            }
 
             // Parse comman-line options
             var opts = new CmdLineArgs();

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r \"class TinyWall\\\\|class Server\\\\|public class\" /c/Users/dvdda/Work/TinyWall/TinyWall/*.cs)",
+      "Bash(xargs grep:*)",
+      "WebSearch",
+      "Bash(dotnet build:*)"
+    ]
+  }
+}

@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
 using System.Windows.Forms;
 using pylorak.Utilities;
 
@@ -137,7 +136,6 @@ namespace pylorak.Windows
 			this.Register();
 		}
 
-        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         public bool PreFilterMessage(ref System.Windows.Forms.Message message)
 		{
 			// Only process WM_HOTKEY messages
@@ -171,7 +169,7 @@ namespace pylorak.Windows
 			{ return "(none)"; }
 
 			// Build key name
-			string keyName = Enum.GetName(typeof(Keys), this.keyCode);;
+			string keyName = Enum.GetName(typeof(Keys), this.keyCode)!;
 			switch (this.keyCode)
 			{
 				case Keys.D0:

@@ -243,7 +243,7 @@ namespace pylorak.TinyWall
             // Check if we've already added this application
             for (int i = 0; i < list.Items.Count; ++i)
             {
-                if (((DatabaseClasses.Application)list.Items[i].Tag).Name.Equals(app.Name))
+                if (((DatabaseClasses.Application)list.Items[i].Tag!).Name.Equals(app.Name))
                     return;
             }
 
@@ -280,7 +280,7 @@ namespace pylorak.TinyWall
         {
             foreach (ListViewItem li in list.Items)
             {
-                var app = (DatabaseClasses.Application)li.Tag;
+                var app = (DatabaseClasses.Application)li.Tag!;
                 if (app.HasFlag("TWUI:Recommended"))
                     li.Checked = true;
             }
@@ -311,7 +311,7 @@ namespace pylorak.TinyWall
             {
                 if (li.Checked)
                 {
-                    var app = (DatabaseClasses.Application)li.Tag;
+                    var app = (DatabaseClasses.Application)li.Tag!;
                     var appFoundFiles = SearchResult.GetFoundComponents(app);
                     foreach (ExecutableSubject subject in appFoundFiles)
                     {

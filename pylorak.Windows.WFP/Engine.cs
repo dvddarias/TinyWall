@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
 using System.Security;
-using System.Runtime.ConstrainedExecution;
 
 namespace pylorak.Windows.WFP
 {
@@ -83,7 +81,6 @@ namespace pylorak.Windows.WFP
 
         public FwpmEngineSafeHandle NativePtr
         {
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
             get
             {
                 return _nativeEngineHandle;

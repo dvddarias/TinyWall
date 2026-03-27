@@ -42,7 +42,7 @@ namespace pylorak.TinyWall
         {
             for (int i = 0; i < listView.SelectedItems.Count; ++i)
             {
-                this.Selection.Add((ProcessInfo)listView.SelectedItems[i].Tag);
+                this.Selection.Add((ProcessInfo)listView.SelectedItems[i].Tag!);
             }
             this.DialogResult = System.Windows.Forms.DialogResult.OK;
         }
@@ -74,7 +74,7 @@ namespace pylorak.TinyWall
 
             foreach (ColumnHeader col in listView.Columns)
             {
-                if (ActiveConfig.Controller.ProcessesFormColumnWidths.TryGetValue((string)col.Tag, out int width))
+                if (ActiveConfig.Controller.ProcessesFormColumnWidths.TryGetValue((string)col.Tag!, out int width))
                     col.Width = width;
             }
 
@@ -98,8 +98,8 @@ namespace pylorak.TinyWall
                     bool skip = false;
                     for (int j = 0; j < itemColl.Count; ++j)
                     {
-                        ProcessInfo opi = (ProcessInfo)itemColl[j].Tag;
-                        if ((e.Package == opi.Package) && (e.Path == opi.Path) && (e.Services.SetEquals(opi.Services)))
+                        ProcessInfo opi = (ProcessInfo)itemColl[j].Tag!;
+                        if ((e.Package == opi!.Package) && (e.Path == opi.Path) && (e.Services.SetEquals(opi.Services)))
                         {
                             skip = true;
                             break;
@@ -151,7 +151,7 @@ namespace pylorak.TinyWall
 
         private void listView_ColumnClick(object sender, ColumnClickEventArgs e)
         {
-            var oldSorter = (ListViewItemComparer)listView.ListViewItemSorter;
+            var oldSorter = (ListViewItemComparer?)listView.ListViewItemSorter;
             var newSorter = new ListViewItemComparer(e.Column);
             if ((oldSorter != null) && (oldSorter.Column == newSorter.Column))
                 newSorter.Ascending = !oldSorter.Ascending;
@@ -175,7 +175,7 @@ namespace pylorak.TinyWall
 
             ActiveConfig.Controller.ProcessesFormColumnWidths.Clear();
             foreach (ColumnHeader col in listView.Columns)
-                ActiveConfig.Controller.ProcessesFormColumnWidths.Add((string)col.Tag, col.Width);
+                ActiveConfig.Controller.ProcessesFormColumnWidths.Add((string)col.Tag!, col.Width);
 
             ActiveConfig.Controller.Save();
             IconScanner.Dispose();
